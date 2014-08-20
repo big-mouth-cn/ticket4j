@@ -1,9 +1,11 @@
-package org.bigmouth.ticket4j.entity;
+package org.bigmouth.ticket4j.entity.response;
 
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.bigmouth.ticket4j.entity.Response;
+import org.bigmouth.ticket4j.entity.Seat;
 import org.bigmouth.ticket4j.entity.train.Train;
 import org.bigmouth.ticket4j.entity.train.TrainDetails;
 
@@ -55,7 +57,7 @@ public class QueryTicketResponse extends Response {
         return false;
     }
     
-    public List<Train> allows(List<String> includes, List<String> excludes, List<Seat> seats, int ticketQuantity) {
+    public List<Train> filter(List<String> includes, List<String> excludes, List<Seat> seats, int ticketQuantity) {
         if (!allowBuy())
             return Lists.newArrayList();
         List<Train> trains = Lists.newArrayList();
@@ -79,7 +81,7 @@ public class QueryTicketResponse extends Response {
             trains.addAll(data);
             for (Train train : data) {
                 TrainDetails dto = train.getQueryLeftNewDTO();
-                if (dto.contains(includes)) {
+                if (dto.contains(excludes)) {
                     trains.remove(train);
                 }
             }
@@ -91,13 +93,15 @@ public class QueryTicketResponse extends Response {
     }
 
     private void filterSeats(List<Seat> seats, int ticketQuantity, List<Train> trains) {
+        List<Train> removePrepare = Lists.newArrayList();
         for (Train train : trains) {
             TrainDetails details = train.getQueryLeftNewDTO();
-            List<Seat> allows = details.getAllows(seats, ticketQuantity);
+            List<Seat> allows = details.filterSeats(seats, ticketQuantity);
             if (CollectionUtils.isEmpty(allows)) {
-                trains.remove(train);
+                removePrepare.add(train);
             }
         }
+        trains.removeAll(removePrepare);
     }
 
     @Override

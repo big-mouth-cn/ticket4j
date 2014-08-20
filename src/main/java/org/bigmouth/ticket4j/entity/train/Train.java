@@ -2,8 +2,6 @@ package org.bigmouth.ticket4j.entity.train;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 
 /**
  * Train.
@@ -47,6 +45,6 @@ public class Train implements Serializable {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this);
+        return new StringBuilder().append(getQueryLeftNewDTO()).append("\t").append(getButtonTextInfo()).toString();
     }
 }

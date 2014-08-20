@@ -9,7 +9,9 @@ import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
 
 public interface PassCode {
 
-    File getPassCode(Ticket4jHttpResponse response);
+    File getLoginPassCode(Ticket4jHttpResponse response);
+    
+    File getOrderPassCode(Ticket4jHttpResponse response);
     
     Response checkLogin(Ticket4jHttpResponse response, String passCode);
     

@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.bigmouth.ticket4j.entity.Response;
 import org.bigmouth.ticket4j.entity.Seat;
 
@@ -93,7 +92,7 @@ public class TrainDetails implements Serializable {
     private String swz_num;
     
     /** 允许购买的席别 */
-    private List<Seat> allows = Lists.newArrayList();
+    private List<Seat> canBuySeats = Lists.newArrayList();
     
     public boolean equals(String trainCode) {
         return (StringUtils.equals(station_train_code, trainCode));
@@ -111,41 +110,45 @@ public class TrainDetails implements Serializable {
         return false;
     }
     
+    public List<Seat> getCanBuySeats() {
+        return this.canBuySeats;
+    }
+    
     /**
      * 返回允许购买的席别
      * 
-     * @param seats 指定席别
+     * @param expect 指定席别
      * @param size 需要购买席别的数量
      * @return
      */
-    public List<Seat> getAllows(List<Seat> seats, int size) {
+    public List<Seat> filterSeats(List<Seat> expect, int size) {
         // initialized
-        if (CollectionUtils.isNotEmpty(allows))
-            return allows;
+        if (CollectionUtils.isNotEmpty(canBuySeats))
+            return canBuySeats;
         
-        for (Seat seat : seats) {
+        for (Seat seat : expect) {
             if (seat == Seat.SWZ && satisfy(swz_num, size))
-                allows.add(Seat.SWZ);
+                canBuySeats.add(Seat.SWZ);
             if (seat == Seat.TDZ && satisfy(tz_num, size)) 
-                allows.add(Seat.TDZ);
+                canBuySeats.add(Seat.TDZ);
             if (seat == Seat.YDZ && satisfy(zy_num, size)) 
-                allows.add(Seat.YDZ);
+                canBuySeats.add(Seat.YDZ);
             if (seat == Seat.EDZ && satisfy(ze_num, size)) 
-                allows.add(Seat.EDZ);
+                canBuySeats.add(Seat.EDZ);
             if (seat == Seat.GJRW && satisfy(gr_num, size)) 
-                allows.add(Seat.GJRW);
+                canBuySeats.add(Seat.GJRW);
             if (seat == Seat.RW && satisfy(rw_num, size)) 
-                allows.add(Seat.RW);
+                canBuySeats.add(Seat.RW);
             if (seat == Seat.YW && satisfy(yw_num, size)) 
-                allows.add(Seat.YW);
+                canBuySeats.add(Seat.YW);
             if (seat == Seat.RZ && satisfy(rz_num, size)) 
-                allows.add(Seat.RZ);
+                canBuySeats.add(Seat.RZ);
             if (seat == Seat.YZ && satisfy(yz_num, size)) 
-                allows.add(Seat.YZ);
+                canBuySeats.add(Seat.YZ);
             if (seat == Seat.WZ && satisfy(wz_num, size)) 
-                allows.add(Seat.WZ);
+                canBuySeats.add(Seat.WZ);
         }
-        return allows;
+        return canBuySeats;
     }
     
     private boolean satisfy(String num, int size) {
@@ -154,7 +157,7 @@ public class TrainDetails implements Serializable {
     }
     
     private int toInt(String num) {
-        return StringUtils.isNumeric(num) ? NumberUtils.toInt(num) : 0;
+        return StringUtils.isNumeric(num) ? NumberUtils.toInt(num) : -1;
     }
 
     public boolean isContinue() {
@@ -507,6 +510,31 @@ public class TrainDetails implements Serializable {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this);
+        StringBuilder b = new StringBuilder(256);
+        b.append(getStation_train_code()).append("\t");
+        b.append(getFrom_station_name()).append("\t");
+        b.append(getTo_station_name()).append("\t");
+        b.append(getStart_time()).append("\t");
+        b.append(getArrive_time()).append("\t");
+        b.append(fillSpace(getSwz_num())).append("|");
+        b.append(fillSpace(getTz_num())).append("|");
+        b.append(fillSpace(getZy_num())).append("|");
+        b.append(fillSpace(getZe_num())).append("|");
+        b.append(fillSpace(getGr_num())).append("|");
+        b.append(fillSpace(getRw_num())).append("|");
+        b.append(fillSpace(getYw_num())).append("|");
+        b.append(fillSpace(getYz_num())).append("|");
+        b.append(fillSpace(getWz_num())).append("|");
+        b.append(fillSpace(getQt_num()));
+        return b.toString();
+    }
+    
+    private String fillSpace(String numberString) {
+        if (StringUtils.equals(numberString, "--") || 
+                StringUtils.equals(numberString, "有")) {
+            return numberString;
+        }
+        int num = NumberUtils.toInt(numberString);
+        return String.valueOf((num < 10) ? ("0" + num) : num);
     }
 }

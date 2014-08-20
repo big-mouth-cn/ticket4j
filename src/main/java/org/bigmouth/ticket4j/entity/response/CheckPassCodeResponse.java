@@ -1,6 +1,7 @@
-package org.bigmouth.ticket4j.entity;
+package org.bigmouth.ticket4j.entity.response;
 
 import org.apache.commons.lang.StringUtils;
+import org.bigmouth.ticket4j.entity.Response;
 
 public class CheckPassCodeResponse extends Response {
 

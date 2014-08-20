@@ -11,8 +11,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
 import org.bigmouth.ticket4j.User;
-import org.bigmouth.ticket4j.entity.LoginSuggestResponse;
 import org.bigmouth.ticket4j.entity.Response;
+import org.bigmouth.ticket4j.entity.response.LoginSuggestResponse;
 import org.bigmouth.ticket4j.http.Ticket4jHttpClient;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
 import org.bigmouth.ticket4j.utils.HttpClientUtils;
@@ -54,11 +54,6 @@ public class DefaultUser extends AccessSupport implements User {
             result = fromJson(body, LoginSuggestResponse.class);
             if (!result.isContinue()) {
                 result.printMessage();
-            }
-            else {
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("恭喜，账户验证通过!");
-                }
             }
         }
         catch (UnsupportedEncodingException e) {

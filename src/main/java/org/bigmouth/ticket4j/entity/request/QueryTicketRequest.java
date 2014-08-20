@@ -1,9 +1,11 @@
-package org.bigmouth.ticket4j.entity;
+package org.bigmouth.ticket4j.entity.request;
 
 import java.util.List;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
+import org.bigmouth.ticket4j.entity.Request;
+import org.bigmouth.ticket4j.entity.Seat;
 
 import com.google.common.collect.Lists;
 

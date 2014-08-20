@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
+import org.bigmouth.ticket4j.entity.Token;
 
 
 public final class HttpClientUtils {
@@ -110,5 +111,54 @@ public final class HttpClientUtils {
             IOUtils.closeQuietly(is);
         }
         return file;
+    }
+    
+    public static Token getResponseBodyAsToken(HttpResponse httpResponse) throws IllegalStateException, IOException {
+        if (null == httpResponse) {
+            return null;
+        }
+        BufferedReader br = null;
+        GZIPInputStream gzipis = null;
+        InputStream is = null;
+        try {
+            is = httpResponse.getEntity().getContent();
+            gzipis = new GZIPInputStream(is);
+            br = new BufferedReader(new InputStreamReader(gzipis, Ticket4jDefaults.DEFAULT_CHARSET));
+            
+            Token token = new Token();
+            String line = "";
+            boolean findToken = false, findKey = false;
+            while ( (line = br.readLine()) != null ) {
+                if (line.indexOf("globalRepeatSubmitToken") != -1) {
+                    int start = line.indexOf("'");
+                    int end = line.lastIndexOf("'");
+                    if (start != -1 && end != -1) {
+                        String tokenString = StringUtils.substring(line, start + 1, end);
+                        findToken = true;
+                        token.setToken(tokenString);
+                    }
+                }
+                if (line.indexOf("ticketInfoForPassengerForm") != -1) {
+                    int start = line.indexOf("key_check_isChange");
+                    if (start != -1) {
+                        line = StringUtils.substring(line, start);
+                        line = StringUtils.substring(line, 0, line.indexOf(","));
+                        line = line.replaceAll("'", "");
+                        String[] keys = StringUtils.split(line, ":");
+                        if (keys.length > 1) {
+                            String orderKey = keys[1];
+                            token.setOrderKey(orderKey);
+                            findKey = true;
+                        }
+                    }
+                }
+                if (findKey && findToken) break;
+            }
+            return token;
+        }
+        finally {
+            IOUtils.closeQuietly(br);
+            IOUtils.closeQuietly(is);
+        }
     }
 }

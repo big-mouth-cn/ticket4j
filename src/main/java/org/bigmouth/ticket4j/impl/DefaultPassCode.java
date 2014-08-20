@@ -20,9 +20,9 @@ import org.apache.http.message.BasicNameValuePair;
 import org.bigmouth.framework.util.PathUtils;
 import org.bigmouth.ticket4j.PassCode;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
-import org.bigmouth.ticket4j.entity.CheckPassCodeResponse;
 import org.bigmouth.ticket4j.entity.Response;
 import org.bigmouth.ticket4j.entity.Token;
+import org.bigmouth.ticket4j.entity.response.CheckPassCodeResponse;
 import org.bigmouth.ticket4j.http.Ticket4jHttpClient;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
 import org.bigmouth.ticket4j.utils.HttpClientUtils;
@@ -38,18 +38,34 @@ public class DefaultPassCode extends AccessSupport implements PassCode {
 
     private String imgDir = Ticket4jDefaults.PATH_TMP;
 
-    private String uriGetPassCode = Ticket4jDefaults.URI_GET_PASSCODE;
+    private String uriGetLoginPassCode = Ticket4jDefaults.URI_GET_LOGIN_PASSCODE;
+    private String uriGetOrderPassCode = Ticket4jDefaults.URI_GET_ORDER_PASSCODE;
     private String uriCheckPassCode = Ticket4jDefaults.URI_CHECK_PASSCODE;
+    
+    public enum PassCodeType {
+        LOGIN, ORDER
+    }
 
     public DefaultPassCode(Ticket4jHttpClient ticket4jHttpClient) {
         super(ticket4jHttpClient);
     }
 
     @Override
-    public File getPassCode(Ticket4jHttpResponse response) {
+    public File getOrderPassCode(Ticket4jHttpResponse response) {
+        return getPassCode(response, PassCodeType.ORDER);
+    }
+
+    @Override
+    public File getLoginPassCode(Ticket4jHttpResponse response) {
+        return getPassCode(response, PassCodeType.LOGIN);
+    }
+
+    private File getPassCode(Ticket4jHttpResponse response, PassCodeType codeType) {
         HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
-        HttpGet httpGet = ticket4jHttpClient.buildGetMethod(uriGetPassCode, response, new Header[] { new BasicHeader(
-                "Accept", "image/webp,*/*;q=0.8") });
+        String uri = codeType == PassCodeType.LOGIN ? uriGetLoginPassCode : uriGetOrderPassCode;
+        HttpGet httpGet = ticket4jHttpClient.buildGetMethod(uri, response, new Header[] { 
+                new BasicHeader("Accept", "image/webp,*/*;q=0.8") 
+        });
         try {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("正在加载验证码...");
@@ -111,11 +127,6 @@ public class DefaultPassCode extends AccessSupport implements PassCode {
                 }
                 result.printMessage();
             }
-            else {
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("恭喜，验证码认证通过!");
-                }
-            }
             return result;
         }
         catch (UnsupportedEncodingException e) {
@@ -140,12 +151,15 @@ public class DefaultPassCode extends AccessSupport implements PassCode {
         }
     }
 
-    public void setUriGetPassCode(String uriGetPassCode) {
-        this.uriGetPassCode = uriGetPassCode;
-    }
-
     public void setUriCheckPassCode(String uriCheckPassCode) {
         this.uriCheckPassCode = uriCheckPassCode;
     }
 
+    public void setUriGetLoginPassCode(String uriGetLoginPassCode) {
+        this.uriGetLoginPassCode = uriGetLoginPassCode;
+    }
+    
+    public void setUriGetOrderPassCode(String uriGetOrderPassCode) {
+        this.uriGetOrderPassCode = uriGetOrderPassCode;
+    }
 }

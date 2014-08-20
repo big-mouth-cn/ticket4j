@@ -1,7 +1,8 @@
-package org.bigmouth.ticket4j.entity;
+package org.bigmouth.ticket4j.entity.response;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.bigmouth.ticket4j.entity.Response;
 
 public class LoginSuggestResponse extends Response {
 

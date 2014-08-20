@@ -29,4 +29,12 @@
 		<constructor-arg value="${user.username}" />
 		<constructor-arg value="${user.password}" />
 	</bean>
+	
+	<bean id="ticket" class="org.bigmouth.ticket4j.impl.DefaultTicket">
+		<constructor-arg ref="ticket4jHttpClient" />
+	</bean>
+	
+	<bean id="order" class="org.bigmouth.ticket4j.impl.DefaultOrder">
+		<constructor-arg ref="ticket4jHttpClient" />
+	</bean>
 </beans>

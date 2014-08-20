@@ -1,17 +1,21 @@
 package org.bigmouth.ticket4j.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.message.BasicNameValuePair;
 import org.bigmouth.ticket4j.Ticket;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
-import org.bigmouth.ticket4j.entity.QueryTicketRequest;
-import org.bigmouth.ticket4j.entity.QueryTicketResponse;
 import org.bigmouth.ticket4j.entity.Seat;
+import org.bigmouth.ticket4j.entity.request.QueryTicketRequest;
+import org.bigmouth.ticket4j.entity.response.QueryTicketResponse;
 import org.bigmouth.ticket4j.entity.train.Train;
 import org.bigmouth.ticket4j.http.Ticket4jHttpClient;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
@@ -35,24 +39,38 @@ public class DefaultTicket extends AccessSupport implements Ticket {
     @Override
     public QueryTicketResponse query(Ticket4jHttpResponse ticket4jHttpResponse, QueryTicketRequest condition) {
         HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
-        HttpPost post = ticket4jHttpClient.buildPostMethod(uriQueryTickets, ticket4jHttpResponse);
+        HttpGet get = ticket4jHttpClient.buildGetMethod(uriQueryTickets, ticket4jHttpResponse);
         try {
             Preconditions.checkNotNull(condition, "查询的车次信息不能为空!");
-            addPair(post, new NameValuePair[] {
+            Preconditions.checkArgument(StringUtils.isNotBlank(condition.getTrainDate()), "出发日期有误，请核实!");
+            Preconditions.checkArgument(StringUtils.isNotBlank(condition.getFromStation()), "出发站有误，请核实!");
+            Preconditions.checkArgument(StringUtils.isNotBlank(condition.getToStation()), "到达站有误，请核实!");
+            try {
+                String date = convert(condition.getTrainDate(), "yyyy-MM-dd");
+                condition.setTrainDate(date);
+            }
+            catch (ParseException e) {
+                throw new IllegalArgumentException("出发日期有误，请核实!");
+            }
+            
+            addPair(get, new NameValuePair[] {
                     new BasicNameValuePair("leftTicketDTO.train_date", condition.getTrainDate()),
                     new BasicNameValuePair("leftTicketDTO.from_station", condition.getFromStation()),
                     new BasicNameValuePair("leftTicketDTO.to_station", condition.getToStation()),
                     new BasicNameValuePair("purpose_codes", condition.getPurposeCodes())
             });
-            HttpResponse httpResponse = httpClient.execute(post);
+            
+            HttpResponse httpResponse = httpClient.execute(get);
             String body = HttpClientUtils.getResponseBody(httpResponse);
             QueryTicketResponse result = fromJson(body, QueryTicketResponse.class);
-            
+            if (!result.isStatus()) {
+                throw new IllegalArgumentException("query ticket error: " + body);
+            }
             List<String> includes = condition.getIncludeTrain();
             List<String> excludes = condition.getExcludeTrain();
             List<Seat> seats = condition.getSeats();
             int ticketQuantity = condition.getTicketQuantity();
-            List<Train> allows = result.allows(includes, excludes, seats, ticketQuantity);
+            List<Train> allows = result.filter(includes, excludes, seats, ticketQuantity);
             result.setAllows(allows);
             return result;
         }
@@ -60,5 +78,21 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             LOGGER.error("query: ", e);
         }
         return null;
+    }
+    
+    private static String convert(String stringDate, String dateFormat) throws ParseException {
+        if (StringUtils.isBlank(stringDate)) {
+            throw new IllegalArgumentException();
+        }
+        if (StringUtils.isBlank(dateFormat)) {
+            throw new IllegalArgumentException();
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        Date date = sdf.parse(stringDate);
+        return sdf.format(date);
+    }
+
+    public void setUriQueryTickets(String uriQueryTickets) {
+        this.uriQueryTickets = uriQueryTickets;
     }
 }

@@ -19,7 +19,7 @@
 		</dependency>
 	</dependencies>
 
-	<description>天罪，是一款购买火车票的程序，它可以通过自动化模拟人工操作来完成购票需求。</description>
+	<description>天罪，是一款火车票购买的辅助程序，它可以通过自动化模拟人工操作来完成购票需求。</description>
 	<build>
 		<plugins>
 			<plugin>

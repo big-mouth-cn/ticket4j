@@ -3,6 +3,7 @@ package org.bigmouth.ticket4j.entity;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 
 
@@ -48,11 +49,13 @@ public enum Seat {
     }
     
     public static String getDescription(List<Seat> seats) {
+        if (CollectionUtils.isEmpty(seats))
+            return "";
         StringBuilder string = new StringBuilder(64);
         for (Seat seat : seats) {
             string.append(getDescription(seat)).append(",");
         }
-        return string.length() > 0 ? string.substring(0, string.length() - 1) : string.toString();
+        return StringUtils.substring(string.toString(), 0, string.length() -1);
     }
     
     public static void main(String[] args) {
