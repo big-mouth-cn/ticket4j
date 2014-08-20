@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="locations">
+			<list>
+				<value>classpath:ticket4j.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean class="org.bigmouth.framework.core.SpringContextHolder" />
+	
+	<bean id="ticket4jHttpClient" class="org.bigmouth.ticket4j.http.Ticket4jHttpClient"></bean>
+	
+	<bean id="initialize" class="org.bigmouth.ticket4j.impl.DefaultInitialize">
+		<constructor-arg ref="ticket4jHttpClient" />
+	</bean>
+	
+	<bean id="passCode" class="org.bigmouth.ticket4j.impl.DefaultPassCode">
+		<constructor-arg ref="ticket4jHttpClient" />
+		<property name="imgDir" value="../images/"></property>
+	</bean>
+	
+	<bean id="user" class="org.bigmouth.ticket4j.impl.DefaultUser">
+		<constructor-arg ref="ticket4jHttpClient" />
+		<constructor-arg value="${user.username}" />
+		<constructor-arg value="${user.password}" />
+	</bean>
+</beans>
