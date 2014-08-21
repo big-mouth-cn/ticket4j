@@ -1,11 +1,7 @@
 package org.bigmouth.ticket4j.impl;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
@@ -48,7 +44,7 @@ public class DefaultUser extends AccessSupport implements User {
                     new BasicNameValuePair("randCode", passCode)
             });
             if (LOGGER.isInfoEnabled()) 
-                LOGGER.info("正在验证账户正确性...");
+                LOGGER.info("正在登录...");
             HttpResponse response = httpClient.execute(post);
             String body = HttpClientUtils.getResponseBody(response);
             result = fromJson(body, LoginSuggestResponse.class);
@@ -56,14 +52,8 @@ public class DefaultUser extends AccessSupport implements User {
                 result.printMessage();
             }
         }
-        catch (UnsupportedEncodingException e) {
-            LOGGER.error("login: ", e);
-        }
-        catch (ClientProtocolException e) {
-            LOGGER.error("login: ", e);
-        }
-        catch (IOException e) {
-            LOGGER.error("login: ", e);
+        catch (Exception e) {
+            LOGGER.error("登录失败,错误原因：{}", e.getMessage());
         }
         finally {
             httpClient.getConnectionManager().shutdown();

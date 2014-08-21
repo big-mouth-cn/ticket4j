@@ -1,10 +1,8 @@
 package org.bigmouth.ticket4j.impl;
 
-import java.io.IOException;
 import java.net.InetAddress;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.bigmouth.ticket4j.Initialize;
@@ -46,15 +44,9 @@ public class DefaultInitialize extends AccessSupport implements Initialize {
             HttpResponse httpResponse = httpClient.execute(get);
             ticket4jHttpClient.printHttpResponseHeader(httpResponse);
             response.setHeaders(httpResponse.getAllHeaders());
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("初始化完成!");
-            }
         }
-        catch (ClientProtocolException e) {
-            LOGGER.error("init: ", e);
-        }
-        catch (IOException e) {
-            LOGGER.error("init: ", e);
+        catch (Exception e) {
+            LOGGER.error("初始化失败,错误原因：", e.getMessage());
         }
         finally {
             httpClient.getConnectionManager().shutdown();
