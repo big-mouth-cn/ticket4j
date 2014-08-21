@@ -38,8 +38,7 @@ public class TicketStartup {
         }, args);
         
         List<Person> persons = Lists.newArrayList(new Person[] {
-                new Person(Seat.YW, "胡笑", "431224198911105057"),
-                new Person(Seat.RW, "吕璐", "431224198901091106")
+                new Person(Seat.YW, "XXX", "431224XXXXXXXX5057")
         });
         
         Initialize initialize = SpringContextHolder.getBean("initialize");
