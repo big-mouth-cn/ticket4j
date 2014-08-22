@@ -67,7 +67,7 @@ public class NoCompleteOrderResponse extends Response {
             for (TicketInfo ticket : orderInfo.getTickets()) {
                 StationTrain train = ticket.getStationTrainDTO();
                 Passenger passenger = ticket.getPassengerDTO();
-                builder.append(ticket.getStart_train_date_page()).append("\t开 ").append(train.getStation_train_code())
+                builder.append(ticket.getStart_train_date_page()).append(" 开 ").append(train.getStation_train_code())
                         .append(" ").append(train.getFrom_station_name()).append("-")
                         .append(train.getTo_station_name()).append("\t").append(ticket.getCoach_name()).append("车厢 ")
                         .append(ticket.getSeat_name()).append("(").append(ticket.getSeat_type_name()).append(")").append("\t").append(passenger.getPassenger_name()).append("\t")

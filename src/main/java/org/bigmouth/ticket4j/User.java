@@ -11,11 +11,17 @@
  */
 package org.bigmouth.ticket4j;
 
+import org.bigmouth.ticket4j.cookie.CookieCache;
 import org.bigmouth.ticket4j.entity.Response;
+import org.bigmouth.ticket4j.entity.response.CheckUserResponse;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
 
 
 public interface User {
 
     Response login(String passCode, Ticket4jHttpResponse ticket4jHttpResponse);
+    
+    CheckUserResponse check(CookieCache cookieCache);
+    
+    String getUsername();
 }

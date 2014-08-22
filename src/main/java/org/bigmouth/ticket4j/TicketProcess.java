@@ -1,0 +1,212 @@
+package org.bigmouth.ticket4j;
+
+import java.util.List;
+import java.util.Scanner;
+
+import org.apache.commons.lang3.StringUtils;
+import org.bigmouth.framework.core.SpringContextHolder;
+import org.bigmouth.ticket4j.cookie.CookieCache;
+import org.bigmouth.ticket4j.entity.Person;
+import org.bigmouth.ticket4j.entity.Response;
+import org.bigmouth.ticket4j.entity.Seat;
+import org.bigmouth.ticket4j.entity.Token;
+import org.bigmouth.ticket4j.entity.request.CheckOrderInfoRequest;
+import org.bigmouth.ticket4j.entity.request.ConfirmSingleForQueueRequest;
+import org.bigmouth.ticket4j.entity.request.QueryTicketRequest;
+import org.bigmouth.ticket4j.entity.request.SubmitOrderRequest;
+import org.bigmouth.ticket4j.entity.response.CheckOrderInfoResponse;
+import org.bigmouth.ticket4j.entity.response.CheckUserResponse;
+import org.bigmouth.ticket4j.entity.response.ConfirmSingleForQueueResponse;
+import org.bigmouth.ticket4j.entity.response.NoCompleteOrderResponse;
+import org.bigmouth.ticket4j.entity.response.QueryTicketResponse;
+import org.bigmouth.ticket4j.entity.train.Train;
+import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
+import org.bigmouth.ticket4j.utils.CharsetUtils;
+import org.bigmouth.ticket4j.utils.PersonUtils;
+import org.bigmouth.ticket4j.utils.StationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
+public class TicketProcess {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(TicketProcess.class);
+    
+    private final CookieCache cookieCache;
+    
+    private String passengers;
+    private String seatSource;
+    private String trainDate;
+    private String trainFrom;
+    private String trainTo;
+    private String includeSource;
+    private String excludeSource;
+    
+    private int queryTicketSleepTime = 1000;
+
+    public TicketProcess(CookieCache cookieCache) {
+        this.cookieCache = cookieCache;
+    }
+
+    public void start() {
+        try {
+            List<Person> persons = Person.of(passengers);
+            List<Seat> seats = Seat.of(seatSource);
+    
+            Initialize initialize = SpringContextHolder.getBean("initialize");
+            PassCode passCode = SpringContextHolder.getBean("passCode");
+            User user = SpringContextHolder.getBean("user");
+            Ticket ticket = SpringContextHolder.getBean("ticket");
+            Order order = SpringContextHolder.getBean("order");
+            
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("将要预订的车票信息：{} 从 {} 到 {} 的 {}， 乘车人信息：{}", new String[] {
+                        trainDate, trainFrom, trainTo, Seat.getDescription(seats), persons.toString()
+                });
+            }
+            
+            // 初始化Cookie及登录
+            Ticket4jHttpResponse response = initTicket4jHttpResponse(initialize, user);
+            
+            while (!response.isSignIn()) {
+                byte[] code = null;
+                passCode.getLoginPassCode(response);
+                Scanner scanner = new Scanner(System.in);
+                code = scanner.next().getBytes();
+                Response login = user.login(new String(code), response);
+                response.setSignIn(login.isContinue());
+            }
+            
+            // 查票
+            QueryTicketRequest condition = new QueryTicketRequest();
+            List<Train> allows = null;
+            do {
+                condition.setTrainDate(trainDate);
+                condition.setFromStation(StationUtils.find(trainFrom));
+                condition.setToStation(StationUtils.find(trainTo));
+                condition.setIncludeTrain(Lists.newArrayList(StringUtils.split(includeSource, ",")));
+                condition.setExcludeTrain(Lists.newArrayList(StringUtils.split(excludeSource, ",")));
+                condition.setSeats(seats);
+                condition.setTicketQuantity(persons.size());
+                QueryTicketResponse result = ticket.query(response, condition);
+                allows = result.getAllows();
+                if (CollectionUtils.isEmpty(allows)) {
+                    LOGGER.info("暂时没有符合预订条件的车次。");
+                }
+                Thread.sleep(queryTicketSleepTime);
+            } while (CollectionUtils.isEmpty(allows));
+            
+            for (Train train : allows) {
+                SubmitOrderRequest submitOrderRequest = new SubmitOrderRequest(trainDate, trainDate, condition.getPurposeCodes(), train);
+                Response submitResponse = order.submit(response, submitOrderRequest);
+                if (submitResponse.isContinue()) {
+                    List<Seat> canBuySeats = train.getCanBuySeats(); // 允许购买的席别
+                    Seat seat = canBuySeats.get(0);
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("乘车人为 {}，席别为 [{}]。", persons, Seat.getDescription(seat));
+                    }
+                    
+                    Token token = order.getToken(response);
+                    passCode.getOrderPassCode(response);
+                    Scanner scanner = new Scanner(System.in);
+                    byte[] code = scanner.next().getBytes();
+                    
+                    String seatTypes = train.getQueryLeftNewDTO().getSeat_types();
+                    String passengerTicketStr = PersonUtils.toPassengerTicketStr(persons, seat, seatTypes);
+                    
+                    CheckOrderInfoRequest checkOrderInfoRequest = new CheckOrderInfoRequest();
+                    checkOrderInfoRequest.setRandCode(new String(code));
+                    checkOrderInfoRequest.setRepeatSubmitToken(token.getToken());
+                    checkOrderInfoRequest.setPassengerTicketStr(passengerTicketStr);
+                    CheckOrderInfoResponse checkOrderInfo = order.checkOrderInfo(response, checkOrderInfoRequest);
+                    if (checkOrderInfo.isContinue()) {
+                        ConfirmSingleForQueueRequest queueRequest = new ConfirmSingleForQueueRequest();
+                        queueRequest.setKeyCheckIsChange(token.getOrderKey());
+                        queueRequest.setLeftTicketStr(train.getQueryLeftNewDTO().getYp_info());
+                        queueRequest.setPassengerTicketStr(passengerTicketStr);
+                        queueRequest.setRandCode(new String(code));
+                        queueRequest.setRepeatSubmitToken(token.getToken());
+                        queueRequest.setTrainLocation(train.getQueryLeftNewDTO().getLocation_code());
+                        
+                        ConfirmSingleForQueueResponse confirmResponse = order.confirm(response, queueRequest);
+                        if (confirmResponse.isContinue()) {
+                            NoCompleteOrderResponse noComplete = new NoCompleteOrderResponse();
+                            do {
+                                noComplete = order.queryNoComplete(response);
+                                if (noComplete.isContinue()) {
+                                    LOGGER.info(noComplete.toString());
+                                }
+                            } while (!noComplete.isContinue());
+                            System.exit(-1);
+                        }
+                        else {
+                            LOGGER.warn(confirmResponse.toString());
+                        }
+                    }
+                    else {
+                        LOGGER.warn(checkOrderInfo.toString());
+                    }
+                }
+                else {
+                    LOGGER.warn(submitResponse.getMessage());
+                }
+            }
+        }
+        catch (Exception e) {
+        }
+    }
+
+    private Ticket4jHttpResponse initTicket4jHttpResponse(Initialize initialize, User user) {
+        Ticket4jHttpResponse response = null;
+        CheckUserResponse cur = user.check(cookieCache);
+        if (!cur.isContinue()) {
+            response = initialize.init();
+            response.setSignIn(false);
+            cookieCache.write(response.getHeaders(), user.getUsername());
+        }
+        else {
+            response = cur.getTicket4jHttpResponse();
+            response.setSignIn(true);
+        }
+        return response;
+    }
+
+    public void setPassengers(String passengers) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(passengers), "没有乘车人信息!");
+        this.passengers = passengers;
+    }
+
+    public void setSeatSource(String seatSource) {
+        this.seatSource = seatSource;
+    }
+
+    public void setTrainDate(String trainDate) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(trainDate), "没有设置乘车日期!");
+        this.trainDate = CharsetUtils.convert(trainDate);
+    }
+
+    public void setTrainFrom(String trainFrom) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(trainFrom), "没有设置出发站!");
+        this.trainFrom = CharsetUtils.convert(trainFrom);
+    }
+
+    public void setTrainTo(String trainTo) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(trainTo), "没有设置到达站!");
+        this.trainTo = CharsetUtils.convert(trainTo);
+    }
+
+    public void setIncludeSource(String includeSource) {
+        this.includeSource = includeSource;
+    }
+
+    public void setExcludeSource(String excludeSource) {
+        this.excludeSource = excludeSource;
+    }
+
+    public void setQueryTicketSleepTime(int queryTicketSleepTime) {
+        this.queryTicketSleepTime = queryTicketSleepTime;
+    }
+}

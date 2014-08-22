@@ -1,5 +1,7 @@
 package org.bigmouth.ticket4j.impl;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -7,7 +9,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
 import org.bigmouth.ticket4j.User;
+import org.bigmouth.ticket4j.cookie.CookieCache;
 import org.bigmouth.ticket4j.entity.Response;
+import org.bigmouth.ticket4j.entity.response.CheckUserResponse;
 import org.bigmouth.ticket4j.entity.response.LoginSuggestResponse;
 import org.bigmouth.ticket4j.http.Ticket4jHttpClient;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
@@ -21,6 +25,7 @@ public class DefaultUser extends AccessSupport implements User {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultUser.class);
     
     private String uriLogin = Ticket4jDefaults.URI_LOGIN;
+    private String uriCheckUser = Ticket4jDefaults.URI_CHECK_USER;
     
     private final String username;
     private final String password;
@@ -59,5 +64,33 @@ public class DefaultUser extends AccessSupport implements User {
             httpClient.getConnectionManager().shutdown();
         }
         return result;
+    }
+
+    @Override
+    public CheckUserResponse check(CookieCache cookieCache) {
+        HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
+        Header[] headers = cookieCache.read(username);
+        if (ArrayUtils.isEmpty(headers))
+            return new CheckUserResponse();
+        Ticket4jHttpResponse ticket4jHttpResponse = new Ticket4jHttpResponse(headers);
+        HttpPost post = ticket4jHttpClient.buildPostMethod(uriCheckUser, ticket4jHttpResponse);
+        try {
+            HttpResponse httpResponse = httpClient.execute(post);
+            String body = HttpClientUtils.getResponseBody(httpResponse);
+            CheckUserResponse response = fromJson(body, CheckUserResponse.class);
+            response.setTicket4jHttpResponse(ticket4jHttpResponse);
+            return response;
+        }
+        catch (Exception e) {
+            LOGGER.error("检查用户会话失败,错误原因：{}", e.getMessage());
+        }
+        finally {
+            httpClient.getConnectionManager().shutdown();
+        }
+        return new CheckUserResponse();
+    }
+
+    public String getUsername() {
+        return username;
     }
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;
 
+import com.google.common.collect.Lists;
+
 
 
 public enum Seat {
@@ -56,6 +58,17 @@ public enum Seat {
             string.append(getDescription(seat)).append(",");
         }
         return StringUtils.substring(string.toString(), 0, string.length() -1);
+    }
+    
+    public static List<Seat> of(String seatString) {
+        List<Seat> seats = Lists.newArrayList();
+        if (StringUtils.isBlank(seatString))
+            return Lists.newArrayList(ALL);
+        String[] seatItems = StringUtils.split(seatString, ",");
+        for (String seat : seatItems) {
+            seats.add(Seat.valueOf(seat));
+        }
+        return seats;
     }
     
     public static void main(String[] args) {

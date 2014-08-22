@@ -10,7 +10,7 @@ public class CheckOrderInfoRequest extends Request {
     private int cancelFlag = 2;
     private String bedLevelOrderNum = "000000000000000000000000000000";
     private String passengerTicketStr;
-    private String oldPassengerStr;
+    private String oldPassengerStr = "_ _ _ _ _";
     private String tourFlag = Ticket4jDefaults.TOUR_FLAG_DC;
     private String randCode;
     private String jsonAtt;

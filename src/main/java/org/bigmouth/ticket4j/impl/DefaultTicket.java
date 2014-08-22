@@ -64,7 +64,7 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             String body = HttpClientUtils.getResponseBody(httpResponse);
             QueryTicketResponse result = fromJson(body, QueryTicketResponse.class);
             if (!result.isStatus()) {
-                throw new IllegalArgumentException("query ticket error: " + body);
+                throw new IllegalArgumentException(result.getMessage());
             }
             List<String> includes = condition.getIncludeTrain();
             List<String> excludes = condition.getExcludeTrain();
@@ -72,10 +72,15 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             int ticketQuantity = condition.getTicketQuantity();
             List<Train> allows = result.filter(includes, excludes, seats, ticketQuantity);
             result.setAllows(allows);
+            if (LOGGER.isInfoEnabled()) {
+                for (Train train : result.getData()) {
+                    LOGGER.info(train.toString());
+                }
+            }
             return result;
         }
         catch (Exception e) {
-            LOGGER.error("query: ", e);
+            LOGGER.error("查询车票失败!错误原因：{}", e.getMessage());
         }
         return null;
     }

@@ -9,7 +9,7 @@ public class ConfirmSingleForQueueRequest extends Request {
     private static final long serialVersionUID = -1523733273275888640L;
 
     private String passengerTicketStr;
-    private String oldPassengerStr;
+    private String oldPassengerStr = "_ ";
     private String randCode;
     private String purposeCodes = Ticket4jDefaults.PURPOSE_CODE_00;
     private String keyCheckIsChange;

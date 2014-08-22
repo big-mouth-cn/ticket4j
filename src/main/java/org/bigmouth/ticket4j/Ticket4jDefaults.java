@@ -25,6 +25,7 @@ public final class Ticket4jDefaults {
     public static final String URI_GET_ORDER_PASSCODE = "/otn/passcodeNew/getPassCodeNew.do?module=passenger&rand=randp";
     public static final String URI_CHECK_PASSCODE = "/otn/passcodeNew/checkRandCodeAnsyn";
     public static final String URI_LOGIN = "/otn/login/loginAysnSuggest";
+    public static final String URI_CHECK_USER = "/otn/login/checkUser";
     public static final String URI_QUERY_TICKETS = "/otn/leftTicket/query";
     public static final String URI_SUBMIT_ORDER = "/otn/leftTicket/submitOrderRequest";
     public static final String URI_INIT_DC = "/otn/confirmPassenger/initDc";

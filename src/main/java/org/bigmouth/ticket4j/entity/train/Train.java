@@ -1,6 +1,9 @@
 package org.bigmouth.ticket4j.entity.train;
 
 import java.io.Serializable;
+import java.util.List;
+
+import org.bigmouth.ticket4j.entity.Seat;
 
 
 /**
@@ -41,6 +44,10 @@ public class Train implements Serializable {
     
     public void setButtonTextInfo(String buttonTextInfo) {
         this.buttonTextInfo = buttonTextInfo;
+    }
+    
+    public List<Seat> getCanBuySeats() {
+        return queryLeftNewDTO.getCanBuySeats();
     }
 
     @Override

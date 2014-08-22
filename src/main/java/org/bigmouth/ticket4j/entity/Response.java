@@ -42,15 +42,20 @@ public abstract class Response implements Serializable {
     public abstract boolean isContinue();
     
     public void printMessage() {
-        StringBuilder msg = new StringBuilder(64);
-        for (String message : messages) {
-            msg.append(message);
-        }
+        String msg = getMessage();
         if (StringUtils.isNotEmpty(msg)) {
             if (LOGGER.isWarnEnabled()) {
                 LOGGER.warn(msg.toString());
             }
         }
+    }
+    
+    public String getMessage() {
+        StringBuilder msg = new StringBuilder(64);
+        for (String message : messages) {
+            msg.append(message);
+        }
+        return msg.toString();
     }
 
     public String getValidateMessagesShowId() {

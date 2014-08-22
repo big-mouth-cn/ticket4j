@@ -1,8 +1,20 @@
 package org.bigmouth.ticket4j.entity;
 
-public class Person {
+import java.util.List;
 
-    private Seat seat;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.bigmouth.ticket4j.utils.CharsetUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+
+public class Person {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(Person.class);
+
     private String name;
     private String card;
 
@@ -26,29 +38,6 @@ public class Person {
         this.name = name;
         this.card = card;
         this.ticketType = ticketType;
-    }
-
-    public Person(Seat seat, String name, String card) {
-        super();
-        this.seat = seat;
-        this.name = name;
-        this.card = card;
-    }
-
-    public Person(Seat seat, String name, String card, int ticketType) {
-        super();
-        this.seat = seat;
-        this.name = name;
-        this.card = card;
-        this.ticketType = ticketType;
-    }
-
-    public Seat getSeat() {
-        return seat;
-    }
-
-    public void setSeat(Seat seat) {
-        this.seat = seat;
     }
 
     public String getName() {
@@ -79,13 +68,51 @@ public class Person {
      * @param seatTypes {@linkplain org.bigmouth.ticket4j.entity.train.TrainDetails#getSeat_types()}
      * @return
      */
-    public String toPassengerTicketStr(String seatTypes) {
+    public String toPassengerTicketStr(Seat seat, String seatTypes) {
         return new StringBuilder(128).append(Seat.getSubmitSeatType(seat, seatTypes)).append(",").append("0,")
                 .append(ticketType).append(",").append(name).append(",1,").append(card).append(",,N").toString();
     }
 
     public String toPassengerTicket() {
-        return "_____";
+        return "_ _ _ _ _";
     }
 
+    public static List<Person> of(String string) {
+        List<Person> persons = Lists.newArrayList();
+        if (StringUtils.isBlank(string)) {
+            return persons;
+        }
+        String[] personsString = StringUtils.split(CharsetUtils.convert(string), ",");
+        if (ArrayUtils.isEmpty(personsString))
+            return persons;
+        for (String personString : personsString) {
+            String[] items = StringUtils.split(personString, "_");
+            
+            String name = null, card = null, ticketType = null;
+            if (items.length > 2) {
+                name = items[0];
+                card = items[1];
+                ticketType = items[2];
+            }
+            else if (items.length > 1) {
+                name = items[0];
+                card = items[1];
+            }
+            else {
+                LOGGER.warn("联系人 {} 有误!", personString);
+                continue;
+            }
+            Person person = new Person(name, card);
+            int ticketTypeValue = NumberUtils.toInt(ticketType);
+            person.setTicketType(ticketTypeValue > 0 && ticketTypeValue < 5 ? ticketTypeValue : 1);
+            persons.add(person);
+        }
+        return persons;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(32);
+        return sb.append(this.name).append("(").append(this.card).append(")").toString();
+    }
 }

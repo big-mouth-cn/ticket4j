@@ -37,4 +37,19 @@
 	<bean id="order" class="org.bigmouth.ticket4j.impl.DefaultOrder">
 		<constructor-arg ref="ticket4jHttpClient" />
 	</bean>
+	
+	<bean id="cookieCache" class="org.bigmouth.ticket4j.cookie.DefaultCookieCache" />
+	
+	<bean id="ticketProcess" class="org.bigmouth.ticket4j.TicketProcess">
+		<constructor-arg ref="cookieCache" />
+		
+		<property name="passengers" value="${passengers}" />
+		<property name="seatSource" value="${seats}" />
+		<property name="trainDate" value="${train.date}" />
+		<property name="trainFrom" value="${train.from}" />
+		<property name="trainTo" value="${train.to}" />
+		<property name="includeSource" value="${train.includes}" />
+		<property name="excludeSource" value="${train.excludes}" />
+		<property name="queryTicketSleepTime" value="${query.ticket.sleep.time}" />
+	</bean>
 </beans>

@@ -62,9 +62,8 @@ public class DefaultOrder extends AccessSupport implements Order {
                 throw new IllegalArgumentException("没有可预订的席别!");
             }
             String trainName = details.getStation_train_code();
-            String seatDescription = Seat.getDescription(seats);
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("正在预订车次 {} 席别为 {} 的车票...", trainName, seatDescription);
+                LOGGER.info("正在预订 {} 的车票...", trainName);
             }
             
             addPair(post, new NameValuePair[] {
@@ -97,7 +96,7 @@ public class DefaultOrder extends AccessSupport implements Order {
         HttpGet get = ticket4jHttpClient.buildGetMethod(uriInitDc, ticket4jHttpResponse);
         try {
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("正在获取Token及令牌……");
+                LOGGER.info("正在获取 Token 及令牌...");
             }
             HttpResponse httpResponse = httpClient.execute(get);
             Token token = HttpClientUtils.getResponseBodyAsToken(httpResponse);
