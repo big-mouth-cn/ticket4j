@@ -17,6 +17,17 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>com.sun</groupId>
+			<artifactId>jna</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun</groupId>
+			<artifactId>imageio</artifactId>
+			<version>1.1</version>
+			<classifier>alpha</classifier>
+		</dependency>
 	</dependencies>
 
 	<description>东皇钟，是一款火车票购买的辅助程序，它可以通过自动化模拟人工操作来完成购票需求。</description>

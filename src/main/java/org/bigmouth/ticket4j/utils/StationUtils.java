@@ -66,7 +66,7 @@ public final class StationUtils {
             initialize.set(true);
         }
         catch (Exception e) {
-            LOGGER.error("initialize: ", e);
+            LOGGER.error("initialize: {}", e.getMessage());
             System.exit(0);
         }
         finally {

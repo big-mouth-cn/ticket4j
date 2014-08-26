@@ -71,7 +71,7 @@ public final class HttpClientUtils {
         InputStream is = null;
         try {
             is = httpResponse.getEntity().getContent();
-            br = new BufferedReader(new InputStreamReader(is));
+            br = new BufferedReader(new InputStreamReader(is, Ticket4jDefaults.DEFAULT_CHARSET));
             StringBuilder content = new StringBuilder();
             String line = "";
             while ( (line = br.readLine()) != null ) {

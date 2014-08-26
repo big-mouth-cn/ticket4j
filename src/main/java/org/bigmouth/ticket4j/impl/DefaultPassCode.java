@@ -77,9 +77,6 @@ public class DefaultPassCode extends AccessSupport implements PassCode {
             if (null == image) {
                 throw new IOException("验证码下载失败!");
             }
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("验证码下载完成，文件地址：{}", image.getPath());
-            }
             return image;
         }
         catch (Exception e) {

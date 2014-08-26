@@ -49,6 +49,10 @@ public class CheckOrderInfoResponse extends Response {
     public boolean isContinue() {
         return data.isSubmitStatus();
     }
+    
+    public String getMessage() {
+        return this.getData().getErrMsg();
+    }
 
     @Override
     public String toString() {

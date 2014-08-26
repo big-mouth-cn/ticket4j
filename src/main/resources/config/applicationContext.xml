@@ -42,6 +42,7 @@
 	
 	<bean id="ticketProcess" class="org.bigmouth.ticket4j.TicketProcess">
 		<constructor-arg ref="cookieCache" />
+		<constructor-arg ref="anti" />
 		
 		<property name="passengers" value="${passengers}" />
 		<property name="seatSource" value="${seats}" />
@@ -51,5 +52,12 @@
 		<property name="includeSource" value="${train.includes}" />
 		<property name="excludeSource" value="${train.excludes}" />
 		<property name="queryTicketSleepTime" value="${query.ticket.sleep.time}" />
+		<property name="recognition" value="${identifying.code.recognition}" />
+	</bean>
+	
+	<bean id="anti" class="org.bigmouth.ticket4j.utils.AntiUtils"
+			 init-method="initialize" destroy-method="destroy">
+		<constructor-arg value="dll/AntiVC.dll" />
+		<constructor-arg value="dll/OCR.dll" />
 	</bean>
 </beans>
