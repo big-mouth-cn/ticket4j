@@ -3,9 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bigmouth</groupId>
 	<artifactId>ticket4j</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<name>东皇钟</name>
 	<dependencies>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.1.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.bigmouth</groupId>
 			<artifactId>framework</artifactId>
@@ -13,20 +18,11 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.1.2</version>
-		</dependency>
-		<dependency>
 			<groupId>com.sun</groupId>
 			<artifactId>jna</artifactId>
 			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun</groupId>
-			<artifactId>imageio</artifactId>
-			<version>1.1</version>
-			<classifier>alpha</classifier>
+			<type>jar</type>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

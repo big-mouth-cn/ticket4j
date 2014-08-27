@@ -26,11 +26,12 @@ public final class Ticket4jDefaults {
     public static final String URI_CHECK_PASSCODE = "/otn/passcodeNew/checkRandCodeAnsyn";
     public static final String URI_LOGIN = "/otn/login/loginAysnSuggest";
     public static final String URI_CHECK_USER = "/otn/login/checkUser";
-    public static final String URI_QUERY_TICKETS = "/otn/leftTicket/query";
+    public static final String URI_QUERY_TICKETS = "/otn/leftTicket/queryT";
     public static final String URI_SUBMIT_ORDER = "/otn/leftTicket/submitOrderRequest";
     public static final String URI_INIT_DC = "/otn/confirmPassenger/initDc";
     public static final String URI_CHECK_ORDER_INFO = "/otn/confirmPassenger/checkOrderInfo";
     public static final String URI_CONFIRM_SINGLE_FOR_QUEUE = "/otn/confirmPassenger/confirmSingleForQueue";
+    public static final String URI_QUERY_ORDER_WAIT_TIME = "/otn/confirmPassenger/queryOrderWaitTime";
     public static final String URI_QUERY_NO_COMPLETE = "/otn/queryOrder/queryMyOrderNoComplete";
     
     private Ticket4jDefaults() {

@@ -1,10 +1,14 @@
 package org.bigmouth.ticket4j.impl;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -21,6 +25,7 @@ import org.bigmouth.ticket4j.entity.request.SubmitOrderRequest;
 import org.bigmouth.ticket4j.entity.response.CheckOrderInfoResponse;
 import org.bigmouth.ticket4j.entity.response.ConfirmSingleForQueueResponse;
 import org.bigmouth.ticket4j.entity.response.NoCompleteOrderResponse;
+import org.bigmouth.ticket4j.entity.response.OrderWaitTimeResponse;
 import org.bigmouth.ticket4j.entity.response.SubmitOrderResponse;
 import org.bigmouth.ticket4j.entity.train.Train;
 import org.bigmouth.ticket4j.entity.train.TrainDetails;
@@ -43,6 +48,7 @@ public class DefaultOrder extends AccessSupport implements Order {
     private String uriCheckOrderInfo = Ticket4jDefaults.URI_CHECK_ORDER_INFO;
     private String uriConfirmSingleForQueue = Ticket4jDefaults.URI_CONFIRM_SINGLE_FOR_QUEUE;
     private String uriQueryNoComplete = Ticket4jDefaults.URI_QUERY_NO_COMPLETE;
+    private String uriQueryOrderWaitTime = Ticket4jDefaults.URI_QUERY_ORDER_WAIT_TIME;
     
     public DefaultOrder(Ticket4jHttpClient ticket4jHttpClient) {
         super(ticket4jHttpClient);
@@ -169,6 +175,33 @@ public class DefaultOrder extends AccessSupport implements Order {
         }
         catch (Exception e) {
             LOGGER.error("提交车票订单失败,错误原因： {}", e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public OrderWaitTimeResponse queryOrderWaitTime(Ticket4jHttpResponse ticket4jHttpResponse, Token token) {
+        HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
+        HttpGet get = ticket4jHttpClient.buildGetMethod(uriQueryOrderWaitTime, ticket4jHttpResponse);
+        try {
+            addPair(get, new NameValuePair[] {
+                    new BasicNameValuePair("random", String.valueOf(RandomUtils.nextDouble())),
+                    new BasicNameValuePair("tourFlag", Ticket4jDefaults.TOUR_FLAG_DC),
+                    new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", token.getToken())
+            });
+            HttpResponse response = httpClient.execute(get);
+            String body = HttpClientUtils.getResponseBody(response);
+            OrderWaitTimeResponse waitTime = fromJson(body, OrderWaitTimeResponse.class);
+            return waitTime;
+        }
+        catch (URISyntaxException e) {
+            LOGGER.error("等待订单结果失败,错误原因： {}", e.getMessage());
+        }
+        catch (ClientProtocolException e) {
+            LOGGER.error("等待订单结果失败,错误原因： {}", e.getMessage());
+        }
+        catch (IOException e) {
+            LOGGER.error("等待订单结果失败,错误原因： {}", e.getMessage());
         }
         return null;
     }

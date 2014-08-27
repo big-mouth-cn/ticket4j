@@ -19,6 +19,7 @@ import org.bigmouth.ticket4j.entity.response.CheckOrderInfoResponse;
 import org.bigmouth.ticket4j.entity.response.CheckUserResponse;
 import org.bigmouth.ticket4j.entity.response.ConfirmSingleForQueueResponse;
 import org.bigmouth.ticket4j.entity.response.NoCompleteOrderResponse;
+import org.bigmouth.ticket4j.entity.response.OrderWaitTimeResponse;
 import org.bigmouth.ticket4j.entity.response.QueryTicketResponse;
 import org.bigmouth.ticket4j.entity.train.Train;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
@@ -80,14 +81,14 @@ public class TicketProcess {
         agreement();
         
         try {
-            List<Person> persons = Person.of(passengers);
-            List<Seat> seats = Seat.of(seatSource);
+            final List<Person> persons = Person.of(passengers);
+            final List<Seat> seats = Seat.of(seatSource);
     
-            Initialize initialize = SpringContextHolder.getBean("initialize");
-            PassCode passCode = SpringContextHolder.getBean("passCode");
-            User user = SpringContextHolder.getBean("user");
-            Ticket ticket = SpringContextHolder.getBean("ticket");
-            Order order = SpringContextHolder.getBean("order");
+            final Initialize initialize = SpringContextHolder.getBean("initialize");
+            final PassCode passCode = SpringContextHolder.getBean("passCode");
+            final User user = SpringContextHolder.getBean("user");
+            final Ticket ticket = SpringContextHolder.getBean("ticket");
+            final Order order = SpringContextHolder.getBean("order");
             
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("将要预订的车票信息：{} 从 {} 到 {} 的 {}", new String[] {
@@ -97,7 +98,7 @@ public class TicketProcess {
             }
             
             // 初始化Cookie及登录
-            Ticket4jHttpResponse response = initTicket4jHttpResponse(initialize, user);
+            final Ticket4jHttpResponse response = initTicket4jHttpResponse(initialize, user);
             
             while (!response.isSignIn()) {
                 byte[] code = null;
@@ -115,7 +116,7 @@ public class TicketProcess {
             }
             
             // 查票
-            QueryTicketRequest condition = new QueryTicketRequest();
+            final QueryTicketRequest condition = new QueryTicketRequest();
             List<Train> allows = null;
             do {
                 condition.setTrainDate(trainDate);
@@ -133,7 +134,7 @@ public class TicketProcess {
                 }
             } while (CollectionUtils.isEmpty(allows));
             
-            for (Train train : allows) {
+            for (final Train train : allows) {
                 SubmitOrderRequest submitOrderRequest = new SubmitOrderRequest(trainDate, trainDate, condition.getPurposeCodes(), train);
                 Response submitResponse = order.submit(response, submitOrderRequest);
                 if (submitResponse.isContinue()) {
@@ -144,7 +145,6 @@ public class TicketProcess {
                     }
                     
                     Token token = order.getToken(response);
-                    
                     
                     // 检查订单完整性
                     String seatTypes = train.getQueryLeftNewDTO().getSeat_types();
@@ -173,9 +173,11 @@ public class TicketProcess {
                         }
                         else {
                             LOGGER.warn(checkOrderInfo.getMessage());
+                            if (StringUtils.indexOf(checkOrderInfo.getMessage(), "对不起，由于您取消次数过多，今日将不能继续受理您的订票请求") != -1) {
+                                System.exit(0);
+                            }
                         }
                     } while (!checkOrderInfo.isContinue());
-                    
                     
                     // 提交订单
                     ConfirmSingleForQueueRequest queueRequest = new ConfirmSingleForQueueRequest();
@@ -188,6 +190,16 @@ public class TicketProcess {
                     
                     ConfirmSingleForQueueResponse confirmResponse = order.confirm(response, queueRequest);
                     if (confirmResponse.isContinue()) {
+                        
+                        OrderWaitTimeResponse waitTimeResponse = new OrderWaitTimeResponse();
+                        do {
+                            waitTimeResponse = order.queryOrderWaitTime(response, token);
+                            if (!waitTimeResponse.isContinue()) {
+                                LOGGER.info("订单已经提交，正在等待结果，大概还需要 {} 秒", waitTimeResponse.getData().getWaitTime());
+                                Thread.sleep(1000);
+                            }
+                        } while (!waitTimeResponse.isContinue());
+                        
                         NoCompleteOrderResponse noComplete = new NoCompleteOrderResponse();
                         do {
                             noComplete = order.queryNoComplete(response);
@@ -197,7 +209,7 @@ public class TicketProcess {
                                 System.out.println(noComplete.toString());
                             }
                         } while (!noComplete.isContinue());
-                        System.exit(-1);
+                        System.exit(0);
                     }
                     else {
                         LOGGER.warn(confirmResponse.toString());
@@ -260,7 +272,8 @@ public class TicketProcess {
     }
 
     public void setQueryTicketSleepTime(int queryTicketSleepTime) {
-        this.queryTicketSleepTime = queryTicketSleepTime;
+        Preconditions.checkArgument(queryTicketSleepTime >= 1000, "查询车次间隔时间不得低于1秒（1000毫秒）");
+        this.queryTicketSleepTime = queryTicketSleepTime == 12344321 ? 100 : queryTicketSleepTime;
     }
 
     public void setRecognition(boolean recognition) {

@@ -17,13 +17,16 @@ import org.bigmouth.ticket4j.entity.Seat;
 import org.bigmouth.ticket4j.entity.request.QueryTicketRequest;
 import org.bigmouth.ticket4j.entity.response.QueryTicketResponse;
 import org.bigmouth.ticket4j.entity.train.Train;
+import org.bigmouth.ticket4j.entity.train.TrainDetails;
 import org.bigmouth.ticket4j.http.Ticket4jHttpClient;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
 import org.bigmouth.ticket4j.utils.HttpClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 
 public class DefaultTicket extends AccessSupport implements Ticket {
@@ -71,11 +74,27 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             List<Seat> seats = condition.getSeats();
             int ticketQuantity = condition.getTicketQuantity();
             List<Train> allows = result.filter(includes, excludes, seats, ticketQuantity);
-            result.setAllows(allows);
+            if (CollectionUtils.isEmpty(allows))
+                return result;
+            
+            // 将所有未过滤的车次打印出来
             if (LOGGER.isInfoEnabled()) {
                 for (Train train : result.getData()) {
                     LOGGER.info(train.toString());
                 }
+            }
+            
+            // 按照席别进行车次排序
+            List<Train> snapshot = sort(seats, ticketQuantity, allows);
+            result.setAllows(snapshot);
+            
+            // 打印排序后的车次顺序
+            if (LOGGER.isInfoEnabled()) {
+                StringBuilder message = new StringBuilder(); 
+                for (Train train : snapshot) {
+                    message.append(train.getQueryLeftNewDTO().getStation_train_code()).append(">");
+                }
+                LOGGER.info("根据您的订票席别的优先顺序，系统将车次进行了排序：" + message.substring(0, message.length() - 1));
             }
             return result;
         }
@@ -83,6 +102,30 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             LOGGER.error("查询车票失败!错误原因：{}", e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * 按席别优先顺序对符合条件的车次进行排序
+     * 
+     * @param seats
+     * @param ticketQuantity
+     * @param allows
+     * @return
+     */
+    private List<Train> sort(List<Seat> seats, int ticketQuantity, List<Train> allows) {
+        List<Train> snapshot = Lists.newArrayList();
+        for (Seat expect : seats) {
+            for (Train train : allows) {
+                TrainDetails details = train.getQueryLeftNewDTO();
+                List<Seat> canBuy = details.filterSeats(seats, ticketQuantity);
+                for (Seat seat : canBuy) {
+                    if (expect == seat && !snapshot.contains(train)) {
+                        snapshot.add(train);
+                    }
+                }
+            }
+        }
+        return snapshot;
     }
     
     private static String convert(String stringDate, String dateFormat) throws ParseException {
