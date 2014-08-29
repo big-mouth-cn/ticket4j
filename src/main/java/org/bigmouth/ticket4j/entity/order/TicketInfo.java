@@ -2,6 +2,8 @@ package org.bigmouth.ticket4j.entity.order;
 
 import java.io.Serializable;
 
+import org.bigmouth.ticket4j.entity.Passenger;
+
 
 public class TicketInfo implements Serializable {
 

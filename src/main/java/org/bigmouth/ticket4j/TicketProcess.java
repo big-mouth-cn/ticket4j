@@ -20,9 +20,12 @@ import org.bigmouth.ticket4j.entity.response.CheckUserResponse;
 import org.bigmouth.ticket4j.entity.response.ConfirmSingleForQueueResponse;
 import org.bigmouth.ticket4j.entity.response.NoCompleteOrderResponse;
 import org.bigmouth.ticket4j.entity.response.OrderWaitTimeResponse;
+import org.bigmouth.ticket4j.entity.response.QueryPassengerResponse;
 import org.bigmouth.ticket4j.entity.response.QueryTicketResponse;
 import org.bigmouth.ticket4j.entity.train.Train;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
+import org.bigmouth.ticket4j.report.Report;
+import org.bigmouth.ticket4j.report.TicketReport;
 import org.bigmouth.ticket4j.utils.AntiUtils;
 import org.bigmouth.ticket4j.utils.CharsetUtils;
 import org.bigmouth.ticket4j.utils.PersonUtils;
@@ -40,6 +43,7 @@ public class TicketProcess {
     
     private final CookieCache cookieCache;
     private final AntiUtils antiUtils;
+    private final TicketReport ticketReport;
     
     private String passengers;
     private String seatSource;
@@ -53,33 +57,13 @@ public class TicketProcess {
     
     private boolean recognition = true;
 
-    public TicketProcess(CookieCache cookieCache, AntiUtils antiUtils) {
+    public TicketProcess(CookieCache cookieCache, AntiUtils antiUtils, TicketReport ticketReport) {
         this.cookieCache = cookieCache;
         this.antiUtils = antiUtils;
+        this.ticketReport = ticketReport;
     }
     
-    public void agreement() {
-        System.out.println("《东皇钟》使用合约");
-        System.out.println("您必须同意以下协议才可以使用本软件");
-        System.out.println("1. 本软件所有购票接口基于12306官网，从下载、安装、升级完全免费；");
-        System.out.println("2. 本软件只是一个辅助工具，其购票原理是减少人机交互，循环操作，并不能保证百分之百成功；");
-        System.out.println("3. 不得对本软件进行恶意篡改、破解、反编译及倒卖软件等不法行为，否则我们有权无条件终止您的使用；");
-        System.out.println("4. 因不可抗力因素导致本软件不能使用，本软件不承担任何责任；");
-        System.out.println("5. 本软件未授权任何单位及个人，也未在任何第三方平台销售；");
-        System.out.println("6. 使用本软件需遵守相关法律法规，不得利用本软件有非法倒票、卖票等行为；");
-        System.out.println("7. 本软件可能会保存并上传用户的使用记录，并承诺将严格保障用户隐私权，对用户的个人信息保密，未经用户的同意不得向他人泄露，但法律另有规定的除外。只有当相关部门依照法定程序要求我们披露用户的个人资料时，我们才会依法或为维护公共安全之目的向执法单位提供用户的个人资料，且不承担任何法律责任。");
-        System.out.println("--------------------------------------------------");
-        System.out.print("如果您同意以上协议，继续使用请输入“Y”确认：");
-        String input = new Scanner(System.in).next();
-        if (!StringUtils.equalsIgnoreCase(input, "Y")) {
-            System.out.println("再见!");
-            System.exit(0);
-        }
-    }
-
     public void start() {
-        agreement();
-        
         try {
             final List<Person> persons = Person.of(passengers);
             final List<Seat> seats = Seat.of(seatSource);
@@ -113,6 +97,16 @@ public class TicketProcess {
                 }
                 Response login = user.login(new String(code), response);
                 response.setSignIn(login.isContinue());
+            }
+            
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("正在检查乘车人是否允许购票...");
+            }
+            QueryPassengerResponse queryPassenger = user.queryPassenger(response);
+            Person invalid = new Person();
+            if (!queryPassenger.contains(persons, invalid)) {
+                LOGGER.warn("对不起！{} 不允许购票，请核对身份信息是否正确，并确认已添加到“常用联系人”中。", invalid);
+                System.exit(0);
             }
             
             // 查票
@@ -200,23 +194,43 @@ public class TicketProcess {
                             }
                         } while (!waitTimeResponse.isContinue());
                         
+                        if (StringUtils.isBlank(waitTimeResponse.getData().getOrderId())) {
+                            LOGGER.warn("对不起，订单处理失败，原因暂时不明。");
+                            System.exit(0);
+                        }
+                        
                         NoCompleteOrderResponse noComplete = new NoCompleteOrderResponse();
                         do {
                             noComplete = order.queryNoComplete(response);
                             if (noComplete.isContinue()) {
+                                Report report = new Report();
+                                report.setUsername(user.getUsername());
+                                report.setOrders(noComplete.getData().getOrderDBList());
+                                ticketReport.write(report);
+                                
                                 LOGGER.info("恭喜车票预订成功，请尽快登录12306客运服务后台进行支付。");
                                 System.out.println();
                                 System.out.println(noComplete.toString());
+                                return;
                             }
                         } while (!noComplete.isContinue());
-                        System.exit(0);
                     }
                     else {
                         LOGGER.warn(confirmResponse.toString());
                     }
                 }
                 else {
-                    LOGGER.warn(submitResponse.getMessage());
+                    if (StringUtils.startsWith(submitResponse.getMessage(), "您还有未处理的订单")) {
+                        if (LOGGER.isWarnEnabled()) {
+                            LOGGER.warn("您还有未处理的订单，请登录12306客运服务后台->未完成订单 进行处理!");
+                        }
+                        return;
+                    }
+                    else {
+                        if (LOGGER.isWarnEnabled()) {
+                            LOGGER.warn(submitResponse.getMessage());
+                        }
+                    }
                 }
             }
         }

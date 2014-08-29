@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.bigmouth.ticket4j.entity.Passenger;
 import org.bigmouth.ticket4j.entity.Response;
 import org.bigmouth.ticket4j.entity.order.OrderInfo;
-import org.bigmouth.ticket4j.entity.order.Passenger;
 import org.bigmouth.ticket4j.entity.order.StationTrain;
 import org.bigmouth.ticket4j.entity.order.TicketInfo;
 

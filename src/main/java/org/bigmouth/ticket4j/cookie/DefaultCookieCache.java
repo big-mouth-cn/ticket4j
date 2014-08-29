@@ -74,10 +74,14 @@ public class DefaultCookieCache implements CookieCache {
         catch (ClassNotFoundException e) {
             LOGGER.warn("Cookie 从缓存读取失败,错误原因：{}", e.getMessage());
         }
+        finally {
+            IOUtils.closeQuietly(ois);
+            IOUtils.closeQuietly(fis);
+        }
         return null;
     }
 
     private String getDirPath() {
-        return PathUtils.appendEndFileSeparator(Ticket4jDefaults.PATH_TMP) + "bigmouth-ticket4j";
+        return Ticket4jDefaults.PATH_COOKIE_DIRECTORY;
     }
 }

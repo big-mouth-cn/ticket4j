@@ -13,6 +13,7 @@
 	</bean>
 	
 	<bean class="org.bigmouth.framework.core.SpringContextHolder" />
+	<bean id="ticketReport" class="org.bigmouth.ticket4j.report.TicketReport" init-method="init" destroy-method="destroy"/>
 	
 	<bean id="ticket4jHttpClient" class="org.bigmouth.ticket4j.http.Ticket4jHttpClient">
 		<property name="host" value="${http.host}" />
@@ -39,6 +40,7 @@
 		<constructor-arg value="${user.password}" />
 		<property name="uriLogin" value="${uri.login}" />
 		<property name="uriCheckUser" value="${uri.check.user}" />
+		<property name="uriPassengersQuery" value="${uri.passengers.query}" />
 	</bean>
 	
 	<bean id="ticket" class="org.bigmouth.ticket4j.impl.DefaultTicket">
@@ -61,6 +63,7 @@
 	<bean id="ticketProcess" class="org.bigmouth.ticket4j.TicketProcess">
 		<constructor-arg ref="cookieCache" />
 		<constructor-arg ref="anti" />
+		<constructor-arg ref="ticketReport" />
 		
 		<property name="passengers" value="${passengers}" />
 		<property name="seatSource" value="${seats}" />

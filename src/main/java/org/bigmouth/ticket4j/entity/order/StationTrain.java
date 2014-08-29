@@ -1,7 +1,11 @@
 package org.bigmouth.ticket4j.entity.order;
 
-public class StationTrain {
+import java.io.Serializable;
 
+public class StationTrain implements Serializable {
+
+    private static final long serialVersionUID = -1165965253576046116L;
+    
     private String station_train_code;
     private String from_station_telecode;
     private String from_station_name;

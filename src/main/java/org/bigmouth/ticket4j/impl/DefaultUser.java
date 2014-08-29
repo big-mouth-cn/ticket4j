@@ -5,6 +5,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
@@ -13,6 +14,7 @@ import org.bigmouth.ticket4j.cookie.CookieCache;
 import org.bigmouth.ticket4j.entity.Response;
 import org.bigmouth.ticket4j.entity.response.CheckUserResponse;
 import org.bigmouth.ticket4j.entity.response.LoginSuggestResponse;
+import org.bigmouth.ticket4j.entity.response.QueryPassengerResponse;
 import org.bigmouth.ticket4j.http.Ticket4jHttpClient;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
 import org.bigmouth.ticket4j.utils.HttpClientUtils;
@@ -26,6 +28,7 @@ public class DefaultUser extends AccessSupport implements User {
     
     private String uriLogin = Ticket4jDefaults.URI_LOGIN;
     private String uriCheckUser = Ticket4jDefaults.URI_CHECK_USER;
+    private String uriPassengersQuery = Ticket4jDefaults.URI_PASSENGERS_QUERY;
     
     private final String username;
     private final String password;
@@ -90,6 +93,25 @@ public class DefaultUser extends AccessSupport implements User {
         return new CheckUserResponse();
     }
 
+    @Override
+    public QueryPassengerResponse queryPassenger(Ticket4jHttpResponse ticket4jHttpResponse) {
+        HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
+        HttpGet get = ticket4jHttpClient.buildGetMethod(uriPassengersQuery, ticket4jHttpResponse);
+        try {
+            addPair(get, new NameValuePair[] {
+                    new BasicNameValuePair("pageIndex", "1"),
+                    new BasicNameValuePair("pageSize", "1000")
+            });
+            HttpResponse httpResponse = httpClient.execute(get);
+            String body = HttpClientUtils.getResponseBody(httpResponse);
+            return fromJson(body, QueryPassengerResponse.class);
+        }
+        catch (Exception e) {
+            LOGGER.error("查询常用联系人失败,错误原因：{}", e.getMessage());
+        }
+        return null;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -100,5 +122,9 @@ public class DefaultUser extends AccessSupport implements User {
 
     public void setUriCheckUser(String uriCheckUser) {
         this.uriCheckUser = uriCheckUser;
+    }
+
+    public void setUriPassengersQuery(String uriPassengersQuery) {
+        this.uriPassengersQuery = uriPassengersQuery;
     }
 }
