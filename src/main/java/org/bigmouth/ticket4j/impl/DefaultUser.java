@@ -93,4 +93,12 @@ public class DefaultUser extends AccessSupport implements User {
     public String getUsername() {
         return username;
     }
+
+    public void setUriLogin(String uriLogin) {
+        this.uriLogin = uriLogin;
+    }
+
+    public void setUriCheckUser(String uriCheckUser) {
+        this.uriCheckUser = uriCheckUser;
+    }
 }

@@ -6,6 +6,7 @@
 		<property name="ignoreResourceNotFound" value="true" />
 		<property name="locations">
 			<list>
+				<value>classpath:config/kyfw.properties</value>
 				<value>classpath:ticket4j.properties</value>
 			</list>
 		</property>
@@ -13,29 +14,46 @@
 	
 	<bean class="org.bigmouth.framework.core.SpringContextHolder" />
 	
-	<bean id="ticket4jHttpClient" class="org.bigmouth.ticket4j.http.Ticket4jHttpClient"></bean>
+	<bean id="ticket4jHttpClient" class="org.bigmouth.ticket4j.http.Ticket4jHttpClient">
+		<property name="host" value="${http.host}" />
+		<property name="port" value="${http.port}" />
+		<property name="timeout" value="${http.timeout}" />
+	</bean>
 	
 	<bean id="initialize" class="org.bigmouth.ticket4j.impl.DefaultInitialize">
 		<constructor-arg ref="ticket4jHttpClient" />
+		<property name="uriInit" value="${uri.init}" />
 	</bean>
 	
 	<bean id="passCode" class="org.bigmouth.ticket4j.impl.DefaultPassCode">
 		<constructor-arg ref="ticket4jHttpClient" />
-		<property name="imgDir" value="../images/"></property>
+		<property name="imgDir" value="../images/" />
+		<property name="uriGetLoginPassCode" value="${uri.login.passcode}" />
+		<property name="uriGetOrderPassCode" value="${uri.order.passcode}" />
+		<property name="uriCheckPassCode" value="${uri.check.passcode}" />
 	</bean>
 	
 	<bean id="user" class="org.bigmouth.ticket4j.impl.DefaultUser">
 		<constructor-arg ref="ticket4jHttpClient" />
 		<constructor-arg value="${user.username}" />
 		<constructor-arg value="${user.password}" />
+		<property name="uriLogin" value="${uri.login}" />
+		<property name="uriCheckUser" value="${uri.check.user}" />
 	</bean>
 	
 	<bean id="ticket" class="org.bigmouth.ticket4j.impl.DefaultTicket">
 		<constructor-arg ref="ticket4jHttpClient" />
+		<property name="uriQueryTickets" value="${uri.query}" />
 	</bean>
 	
 	<bean id="order" class="org.bigmouth.ticket4j.impl.DefaultOrder">
 		<constructor-arg ref="ticket4jHttpClient" />
+		<property name="uriSubmitOrder" value="${uri.submit.order}" />
+		<property name="uriInitDc" value="${uri.init.dc}" />
+		<property name="uriCheckOrderInfo" value="${uri.check.order}" />
+		<property name="uriConfirmSingleForQueue" value="${uri.confirm.single.queue}" />
+		<property name="uriQueryNoComplete" value="${uri.query.no.complete}" />
+		<property name="uriQueryOrderWaitTime" value="${uri.query.order.waitTime}" />
 	</bean>
 	
 	<bean id="cookieCache" class="org.bigmouth.ticket4j.cookie.DefaultCookieCache" />

@@ -74,8 +74,6 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             List<Seat> seats = condition.getSeats();
             int ticketQuantity = condition.getTicketQuantity();
             List<Train> allows = result.filter(includes, excludes, seats, ticketQuantity);
-            if (CollectionUtils.isEmpty(allows))
-                return result;
             
             // 将所有未过滤的车次打印出来
             if (LOGGER.isInfoEnabled()) {
@@ -84,6 +82,8 @@ public class DefaultTicket extends AccessSupport implements Ticket {
                 }
             }
             
+            if (CollectionUtils.isEmpty(allows))
+                return result;
             // 按照席别进行车次排序
             List<Train> snapshot = sort(seats, ticketQuantity, allows);
             result.setAllows(snapshot);

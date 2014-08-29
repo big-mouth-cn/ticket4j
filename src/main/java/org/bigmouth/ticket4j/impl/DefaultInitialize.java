@@ -53,4 +53,8 @@ public class DefaultInitialize extends AccessSupport implements Initialize {
         }
         return response;
     }
+
+    public void setUriInit(String uriInit) {
+        this.uriInit = uriInit;
+    }
 }

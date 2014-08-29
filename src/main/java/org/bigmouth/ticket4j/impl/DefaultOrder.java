@@ -240,4 +240,8 @@ public class DefaultOrder extends AccessSupport implements Order {
     public void setUriQueryNoComplete(String uriQueryNoComplete) {
         this.uriQueryNoComplete = uriQueryNoComplete;
     }
+
+    public void setUriQueryOrderWaitTime(String uriQueryOrderWaitTime) {
+        this.uriQueryOrderWaitTime = uriQueryOrderWaitTime;
+    }
 }
