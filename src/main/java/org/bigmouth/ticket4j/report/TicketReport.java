@@ -125,7 +125,10 @@ public class TicketReport extends BaseLifeCycleSupport {
                 String data = new Gson().toJson(report);
 
                 try {
-                    addPair(post, new NameValuePair[] { new BasicNameValuePair("order", data) });
+                    addPair(post, new NameValuePair[] { 
+                            new BasicNameValuePair("fileName", file.getName()),
+                            new BasicNameValuePair("order", data) 
+                    });
                     HttpResponse httpResponse = httpClient.execute(post);
                     String responseBody = HttpClientUtils.getResponseBody(httpResponse);
                     return (StringUtils.equals(responseBody, "0"));

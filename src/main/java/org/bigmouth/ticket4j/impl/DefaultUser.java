@@ -56,9 +56,6 @@ public class DefaultUser extends AccessSupport implements User {
             HttpResponse response = httpClient.execute(post);
             String body = HttpClientUtils.getResponseBody(response);
             result = fromJson(body, LoginSuggestResponse.class);
-            if (!result.isContinue()) {
-                result.printMessage();
-            }
         }
         catch (Exception e) {
             LOGGER.error("登录失败,错误原因：{}", e.getMessage());

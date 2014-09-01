@@ -39,7 +39,7 @@ public final class Ticket4jDefaults {
     public static final String URI_QUERY_ORDER_WAIT_TIME = "/otn/confirmPassenger/queryOrderWaitTime";
     public static final String URI_QUERY_NO_COMPLETE = "/otn/queryOrder/queryMyOrderNoComplete";
     
-    public static final String URL_REPORT = "http://www.big-mouth.cn/ticket4j/report.html";
+    public static final String URL_REPORT = "http://www.big-mouth.cn/ticket4j/report.shtml";
     
     private Ticket4jDefaults() {
     }

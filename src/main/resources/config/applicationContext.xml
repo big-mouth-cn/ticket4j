@@ -78,7 +78,7 @@
 	
 	<bean id="anti" class="org.bigmouth.ticket4j.utils.AntiUtils"
 			 init-method="initialize" destroy-method="destroy">
-		<constructor-arg value="dll/AntiVC.dll" />
-		<constructor-arg value="dll/OCR.dll" />
+		<constructor-arg value="classpath:dll/AntiVC.dll" />
+		<constructor-arg value="classpath:dll/OCR.dll" />
 	</bean>
 </beans>

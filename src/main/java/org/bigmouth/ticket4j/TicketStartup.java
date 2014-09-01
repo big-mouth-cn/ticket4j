@@ -32,5 +32,6 @@ public class TicketStartup {
         }, args);
         TicketProcess process = SpringContextHolder.getBean("ticketProcess");
         process.start();
+        System.out.println("再见!");
     }
 }

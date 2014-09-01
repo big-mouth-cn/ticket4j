@@ -97,6 +97,12 @@ public class TicketProcess {
                 }
                 Response login = user.login(new String(code), response);
                 response.setSignIn(login.isContinue());
+                if (!login.isContinue()) {
+                    login.printMessage();
+                    if (StringUtils.equals(login.getMessage(), "00：00至07：00为系统维护时间")) {
+                        return;
+                    }
+                }
             }
             
             if (LOGGER.isInfoEnabled()) {
