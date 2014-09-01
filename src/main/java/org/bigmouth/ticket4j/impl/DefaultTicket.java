@@ -4,13 +4,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.message.BasicNameValuePair;
+import org.bigmouth.framework.util.DateUtils;
 import org.bigmouth.ticket4j.Ticket;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
 import org.bigmouth.ticket4j.entity.Seat;
@@ -32,11 +36,19 @@ import com.google.common.collect.Lists;
 public class DefaultTicket extends AccessSupport implements Ticket {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTicket.class);
+    private static SimpleDateFormat SDF = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
     
     private String uriQueryTickets = Ticket4jDefaults.URI_QUERY_TICKETS;
+    
+    /** 当前服务器时间 */
+    private Date serverTime = null;
 
     public DefaultTicket(Ticket4jHttpClient ticket4jHttpClient) {
         super(ticket4jHttpClient);
+    }
+    
+    static {
+        SDF.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
     @Override
@@ -64,6 +76,12 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             });
             
             HttpResponse httpResponse = httpClient.execute(get);
+            
+            Date crtServerTime = printCacheHeaders(httpResponse);
+            if (null != crtServerTime) {
+                serverTime = crtServerTime;
+            }
+            
             String body = HttpClientUtils.getResponseBody(httpResponse);
             QueryTicketResponse result = fromJson(body, QueryTicketResponse.class);
             if (!result.isStatus()) {
@@ -104,6 +122,34 @@ public class DefaultTicket extends AccessSupport implements Ticket {
         return null;
     }
 
+    private Date printCacheHeaders(HttpResponse httpResponse) {
+        StringBuilder hdMessage = new StringBuilder();
+        boolean isCache = false;
+        Date crtServerTime = null;
+        for (Header header : httpResponse.getAllHeaders()) {
+            if (StringUtils.equals("X-Via", header.getName())) {
+                hdMessage.append(header.getValue());
+            }
+            else if (StringUtils.equals("Date", header.getName())) {
+                // Mon, 01 Sep 2014 06:55:22 GMT
+                String time = header.getValue();
+                try {
+                    crtServerTime = SDF.parse(header.getValue());
+                    time = DateUtils.convertDate2String(crtServerTime, "yyyy/MM/dd HH:mm:ss");
+                }
+                catch (ParseException e) {
+                }
+                hdMessage.append(time).append(" ");
+            }
+            else if (StringUtils.equals("Age", header.getName())) {
+                // Cache
+                isCache = true;
+            }
+        }
+        LOGGER.info("{} [{}]", (isCache) ? "缓存" : "最新", hdMessage.toString());
+        return crtServerTime;
+    }
+
     /**
      * 按席别优先顺序对符合条件的车次进行排序
      * 
@@ -142,5 +188,9 @@ public class DefaultTicket extends AccessSupport implements Ticket {
 
     public void setUriQueryTickets(String uriQueryTickets) {
         this.uriQueryTickets = uriQueryTickets;
+    }
+
+    public Date getServerTime() {
+        return serverTime;
     }
 }

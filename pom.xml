@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bigmouth</groupId>
 	<artifactId>bigmouth-ticket4j</artifactId>
-	<version>1.0.3</version>
+	<version>1.0.4</version>
 	<name>东皇钟</name>
 	<dependencies>
 		<dependency>
@@ -20,7 +20,14 @@
 		<dependency>
 			<groupId>org.bigmouth</groupId>
 			<artifactId>bigmouth-anti</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>15.0</version>
+			<type>jar</type>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

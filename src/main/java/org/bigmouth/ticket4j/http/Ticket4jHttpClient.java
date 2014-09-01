@@ -85,7 +85,6 @@ public final class Ticket4jHttpClient {
             setRequestCookie(httpGet, getCookieHeaders(response));
         }
         setRequestHeader(httpGet, headers);
-        printHttpRequestHeader(httpGet);
         return httpGet;
     }
     
@@ -109,7 +108,6 @@ public final class Ticket4jHttpClient {
             setRequestCookie(httpPost, getCookieHeaders(response));
         }
         setRequestHeader(httpPost, headers);
-        printHttpRequestHeader(httpPost);
         return httpPost;
     }
 
@@ -163,30 +161,30 @@ public final class Ticket4jHttpClient {
         httpRequest.addHeader("Cookie", sb.toString());
     }
     
-    private void printHttpRequestHeader(HttpRequestBase httpRequestBase) {
+    public static void printHttpRequestHeader(HttpRequestBase httpRequestBase) {
         if (null == httpRequestBase)
             return;
         Header[] headers = httpRequestBase.getAllHeaders();
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("===============Request Headers===============");
+        if (LOGGER.isInfoEnabled())
+            LOGGER.info("===============Request Headers===============");
         printHeaders(headers);
     }
     
-    public void printHttpResponseHeader(HttpResponse httpResponse) {
+    public static void printHttpResponseHeader(HttpResponse httpResponse) {
         if (null == httpResponse)
             return;
         Header[] headers = httpResponse.getAllHeaders();
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("===============Response Headers===============");
+        if (LOGGER.isInfoEnabled())
+            LOGGER.info("===============Response Headers===============");
         printHeaders(headers);
     }
     
-    private void printHeaders(Header[] headers) {
+    public static void printHeaders(Header[] headers) {
         if (ArrayUtils.isEmpty(headers))
             return;
         for (Header header : headers) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(header.getName() + " = " + header.getValue());
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(header.getName() + " = " + header.getValue());
             }
         }
     }

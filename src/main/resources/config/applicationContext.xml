@@ -74,6 +74,8 @@
 		<property name="excludeSource" value="${train.excludes}" />
 		<property name="queryTicketSleepTime" value="${query.ticket.sleep.time}" />
 		<property name="recognition" value="${identifying.code.recognition}" />
+		<property name="strGivenTime" value="${query.ticket.given.time}" />
+		<property name="stopMinutesAgo" value="${query.ticket.stop.minutes.ago}" />
 	</bean>
 	
 	<bean id="anti" class="org.bigmouth.ticket4j.utils.AntiUtils"

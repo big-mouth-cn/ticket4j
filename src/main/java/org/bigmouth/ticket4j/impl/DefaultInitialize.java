@@ -42,7 +42,6 @@ public class DefaultInitialize extends AccessSupport implements Initialize {
             }
             
             HttpResponse httpResponse = httpClient.execute(get);
-            ticket4jHttpClient.printHttpResponseHeader(httpResponse);
             response.setHeaders(httpResponse.getAllHeaders());
         }
         catch (Exception e) {

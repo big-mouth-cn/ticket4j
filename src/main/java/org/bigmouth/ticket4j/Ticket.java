@@ -1,5 +1,7 @@
 package org.bigmouth.ticket4j;
 
+import java.util.Date;
+
 import org.bigmouth.ticket4j.entity.request.QueryTicketRequest;
 import org.bigmouth.ticket4j.entity.response.QueryTicketResponse;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
@@ -15,4 +17,6 @@ public interface Ticket {
      * @return
      */
     QueryTicketResponse query(Ticket4jHttpResponse ticket4jHttpResponse, QueryTicketRequest condition);
+    
+    Date getServerTime();
 }

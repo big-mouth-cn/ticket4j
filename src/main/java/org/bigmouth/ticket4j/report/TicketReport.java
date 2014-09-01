@@ -99,7 +99,6 @@ public class TicketReport extends BaseLifeCycleSupport {
     }
 
     private void upload(final File file) {
-        // TODO 有可能多开程序。这样会存在多个进程同时处理同一个文件的问题，需要做多线程处理
         EXECUTOR.execute(new Runnable() {
 
             @Override

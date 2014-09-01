@@ -36,6 +36,10 @@ public class ConfirmSingleForQueueResponse extends Response {
             return ToStringBuilder.reflectionToString(this);
         }
     }
+    
+    public String getErrorMessage() {
+        return this.data.getErrMsg();
+    }
 
     public Data getData() {
         return data;

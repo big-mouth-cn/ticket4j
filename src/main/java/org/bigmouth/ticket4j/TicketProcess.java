@@ -1,11 +1,16 @@
 package org.bigmouth.ticket4j;
 
 import java.io.File;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bigmouth.framework.core.SpringContextHolder;
+import org.bigmouth.framework.util.DateUtils;
 import org.bigmouth.ticket4j.cookie.CookieCache;
 import org.bigmouth.ticket4j.entity.Person;
 import org.bigmouth.ticket4j.entity.Response;
@@ -56,6 +61,9 @@ public class TicketProcess {
     private int queryTicketSleepTime = 1000;
     
     private boolean recognition = true;
+    
+    private Integer[] givenTime;
+    private int stopMinutesAgo;
 
     public TicketProcess(CookieCache cookieCache, AntiUtils antiUtils, TicketReport ticketReport) {
         this.cookieCache = cookieCache;
@@ -130,7 +138,35 @@ public class TicketProcess {
                 allows = result.getAllows();
                 if (CollectionUtils.isEmpty(allows)) {
                     LOGGER.info("暂时没有符合预订条件的车次。");
-                    Thread.sleep(queryTicketSleepTime);
+                    
+                    long millis = queryTicketSleepTime;
+                    if (ArrayUtils.isNotEmpty(givenTime) && stopMinutesAgo != 0) {
+                        // 定时查询
+                        Date serverTime = ticket.getServerTime();
+                        if (null != serverTime) {
+                            for (int time : givenTime) {
+                                Calendar given = Calendar.getInstance();
+                                given.setTime(serverTime);
+                                given.set(Calendar.MINUTE, time);
+                                given.set(Calendar.SECOND, 0);
+                                if (serverTime.getTime() > given.getTimeInMillis()) {
+                                    given.set(Calendar.HOUR, given.get(Calendar.HOUR) + 1);
+                                }
+                                
+                                Calendar stop = Calendar.getInstance();
+                                stop.setTime(given.getTime());
+                                stop.set(Calendar.MINUTE, time - stopMinutesAgo);
+                                stop.set(Calendar.SECOND, 0);
+                                
+                                if (serverTime.getTime() >= stop.getTimeInMillis() && serverTime.getTime() < given.getTimeInMillis()) {
+                                    LOGGER.info("暂停查票，程序将在 {} 继续...", DateUtils.convertDate2String(given.getTime(), "yyyy/MM/dd HH:mm:ss"));
+                                    millis = given.getTimeInMillis() - serverTime.getTime();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    Thread.sleep(millis);
                 }
             } while (CollectionUtils.isEmpty(allows));
             
@@ -202,6 +238,7 @@ public class TicketProcess {
                         
                         if (StringUtils.isBlank(waitTimeResponse.getData().getOrderId())) {
                             LOGGER.warn("对不起，订单处理失败，原因暂时不明。");
+                            LOGGER.warn(waitTimeResponse.toString());
                             System.exit(0);
                         }
                         
@@ -222,7 +259,7 @@ public class TicketProcess {
                         } while (!noComplete.isContinue());
                     }
                     else {
-                        LOGGER.warn(confirmResponse.toString());
+                        LOGGER.warn(confirmResponse.getErrorMessage());
                     }
                 }
                 else {
@@ -258,7 +295,7 @@ public class TicketProcess {
         }
         return response;
     }
-
+    
     public void setPassengers(String passengers) {
         Preconditions.checkArgument(StringUtils.isNotBlank(passengers), "没有乘车人信息!");
         this.passengers = passengers;
@@ -298,5 +335,22 @@ public class TicketProcess {
 
     public void setRecognition(boolean recognition) {
         this.recognition = recognition;
+    }
+
+    public void setStrGivenTime(String strGivenTime) {
+        if (StringUtils.isNotBlank(strGivenTime)) {
+            String[] times = StringUtils.split(strGivenTime, ",");
+            List<Integer> given = Lists.newArrayList();
+            for (String time : times) {
+                if (NumberUtils.isNumber(time)) {
+                    given.add(NumberUtils.toInt(time));
+                }
+            }
+            givenTime = given.toArray(new Integer[0]);
+        }
+    }
+
+    public void setStopMinutesAgo(int stopMinutesAgo) {
+        this.stopMinutesAgo = stopMinutesAgo;
     }
 }
