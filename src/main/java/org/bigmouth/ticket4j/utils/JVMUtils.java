@@ -18,7 +18,7 @@ import com.google.common.base.Preconditions;
 public final class JVMUtils {
 
 	private static final Logger LOGGER = Logger.getLogger(JVMUtils.class);
-
+	
 	private JVMUtils() {
 	}
 

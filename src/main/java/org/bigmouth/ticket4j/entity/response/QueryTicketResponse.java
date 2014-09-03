@@ -19,9 +19,28 @@ import com.google.common.collect.Lists;
 public class QueryTicketResponse extends Response {
 
     private static final long serialVersionUID = 8307990313426312543L;
+    
+    private String c_url;
+    private String c_name;
 
     private List<Train> data = Lists.newArrayList();
     private List<Train> allows = Lists.newArrayList();
+
+    public String getC_url() {
+        return c_url;
+    }
+
+    public void setC_url(String c_url) {
+        this.c_url = c_url;
+    }
+
+    public String getC_name() {
+        return c_name;
+    }
+    
+    public void setC_name(String c_name) {
+        this.c_name = c_name;
+    }
 
     public List<Train> getData() {
         return data;

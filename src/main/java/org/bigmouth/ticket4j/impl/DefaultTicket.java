@@ -37,24 +37,47 @@ public class DefaultTicket extends AccessSupport implements Ticket {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTicket.class);
     private static SimpleDateFormat SDF = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+    private static String available;
     
-    private String uriQueryTickets = Ticket4jDefaults.URI_QUERY_TICKETS;
+    private String uriQueryTicketAddrs = Ticket4jDefaults.URI_QUERY_TICKETS;
     
     /** 当前服务器时间 */
     private Date serverTime = null;
 
     public DefaultTicket(Ticket4jHttpClient ticket4jHttpClient) {
         super(ticket4jHttpClient);
-    }
-    
-    static {
         SDF.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
-
+    
     @Override
     public QueryTicketResponse query(Ticket4jHttpResponse ticket4jHttpResponse, QueryTicketRequest condition) {
-        HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
-        HttpGet get = ticket4jHttpClient.buildGetMethod(uriQueryTickets, ticket4jHttpResponse);
+        QueryTicketResponse response = null;
+        if (StringUtils.isNotBlank(available)) {
+            response = queryTicket(available, ticket4jHttpResponse, condition);
+            if (isContinue(response)) 
+                return response;
+        }
+        String[] uris = StringUtils.split(uriQueryTicketAddrs, ",");
+        for (String uri : uris) {
+            response = queryTicket(uri, ticket4jHttpResponse, condition);
+            if (isContinue(response)) {
+                available = uri;
+                break;
+            }
+        }
+        if (!isContinue(response)) {
+            throw new RuntimeException("查询车票失败!错误原因：" + response.toString());
+        }
+        return response;
+    }
+
+    private boolean isContinue(QueryTicketResponse response) {
+        return null != response && response.isStatus();
+    }
+
+    private QueryTicketResponse queryTicket(String uri, Ticket4jHttpResponse ticket4jHttpResponse, QueryTicketRequest condition) {
+        HttpClient httpClient = ticket4jHttpClient.buildHttpClient(true);
+        HttpGet get = ticket4jHttpClient.buildGetMethod(uri, ticket4jHttpResponse);
         try {
             Preconditions.checkNotNull(condition, "查询的车次信息不能为空!");
             Preconditions.checkArgument(StringUtils.isNotBlank(condition.getTrainDate()), "出发日期有误，请核实!");
@@ -74,8 +97,11 @@ public class DefaultTicket extends AccessSupport implements Ticket {
                     new BasicNameValuePair("leftTicketDTO.to_station", condition.getToStation()),
                     new BasicNameValuePair("purpose_codes", condition.getPurposeCodes())
             });
-            
+            long start = System.currentTimeMillis();
             HttpResponse httpResponse = httpClient.execute(get);
+            
+            if (LOGGER.isDebugEnabled())
+                LOGGER.debug("Query tickets at " + (System.currentTimeMillis() - start) + " ms");
             
             Date crtServerTime = printCacheHeaders(httpResponse);
             if (null != crtServerTime) {
@@ -85,7 +111,7 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             String body = HttpClientUtils.getResponseBody(httpResponse);
             QueryTicketResponse result = fromJson(body, QueryTicketResponse.class);
             if (!result.isStatus()) {
-                throw new IllegalArgumentException(result.getMessage());
+                return result;
             }
             List<String> includes = condition.getIncludeTrain();
             List<String> excludes = condition.getExcludeTrain();
@@ -118,6 +144,9 @@ public class DefaultTicket extends AccessSupport implements Ticket {
         }
         catch (Exception e) {
             LOGGER.error("查询车票失败!错误原因：{}", e.getMessage());
+        }
+        finally {
+            httpClient.getConnectionManager().shutdown();
         }
         return null;
     }
@@ -186,11 +215,11 @@ public class DefaultTicket extends AccessSupport implements Ticket {
         return sdf.format(date);
     }
 
-    public void setUriQueryTickets(String uriQueryTickets) {
-        this.uriQueryTickets = uriQueryTickets;
-    }
-
     public Date getServerTime() {
         return serverTime;
+    }
+    
+    public void setUriQueryTicketAddrs(String uriQueryTicketAddrs) {
+        this.uriQueryTicketAddrs = uriQueryTicketAddrs;
     }
 }

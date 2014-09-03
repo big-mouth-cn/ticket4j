@@ -19,7 +19,7 @@ public class TicketStartup {
         System.out.println("5. 本软件未授权任何单位及个人，也未在任何第三方平台销售；");
         System.out.println("6. 使用本软件需遵守相关法律法规，不得利用本软件有非法倒票、卖票等行为；");
         System.out.println("7. 本软件可能会保存并上传用户的使用记录，并承诺将严格保障用户隐私权，对用户的个人信息保密，未经用户的同意不得向他人泄露，但法律另有规定的除外。只有当相关部门依照法定程序要求我们披露用户的个人资料时，我们才会依法或为维护公共安全之目的向执法单位提供用户的个人资料，且不承担任何法律责任。");
-        System.out.println("-------------------http://www.big-mouth.cn/ticket4j-----------------");
+        System.out.println("-------------------http://www.big-mouth.cn/ticket4j-------------------");
         System.out.print("如果您同意以上协议，继续使用请输入“Y”确认：");
         String input = new Scanner(System.in).next();
         if (!StringUtils.equalsIgnoreCase(input, "Y")) {

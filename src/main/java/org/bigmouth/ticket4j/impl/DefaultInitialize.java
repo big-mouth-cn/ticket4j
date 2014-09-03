@@ -1,7 +1,5 @@
 package org.bigmouth.ticket4j.impl;
 
-import java.net.InetAddress;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -31,16 +29,6 @@ public class DefaultInitialize extends AccessSupport implements Initialize {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("正在初始化...");
             }
-            StringBuilder addr = new StringBuilder(64);
-            InetAddress[] inetAddresses = InetAddress.getAllByName(ticket4jHttpClient.getHost());
-            addr.append("当前DNS服务器地址：");
-            for (InetAddress inetAddress : inetAddresses) {
-                addr.append(inetAddress).append("|");
-            }
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(addr.toString());
-            }
-            
             HttpResponse httpResponse = httpClient.execute(get);
             response.setHeaders(httpResponse.getAllHeaders());
         }

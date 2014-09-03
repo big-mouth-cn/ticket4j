@@ -13,6 +13,8 @@ public final class Ticket4jDefaults {
     public static final int PORT = 443;
     public static final int TIME_OUT = 30000;
     
+    public static final int DEFAULT_LIMIT_CONSUME_TIME_IN_MILLIS = 1000;
+    
     public static final int BUFFER = 1024;
     
     public static final String TOUR_FLAG_DC = "dc";
@@ -24,6 +26,7 @@ public final class Ticket4jDefaults {
     public static final String PATH_ORDER_DIRECTORY = PathUtils.appendEndFileSeparator(PATH_TMP) + "bigmouth-ticket4j/orders";
     public static final String IMAGE_SUFFIX = ".png";
     
+    public static final String URI = "/otn";
     public static final String URI_INIT = "/otn/login/init.do";
     public static final String URI_GET_LOGIN_PASSCODE = "/otn/passcodeNew/getPassCodeNew.do?module=login&rand=sjrand";
     public static final String URI_GET_ORDER_PASSCODE = "/otn/passcodeNew/getPassCodeNew.do?module=passenger&rand=randp";
@@ -40,6 +43,7 @@ public final class Ticket4jDefaults {
     public static final String URI_QUERY_NO_COMPLETE = "/otn/queryOrder/queryMyOrderNoComplete";
     
     public static final String URL_REPORT = "http://www.big-mouth.cn/ticket4j/report.shtml";
+    public static final String URL_DNS_RESOURCE = "http://www.big-mouth.cn/DNS.shtml";
     
     private Ticket4jDefaults() {
     }

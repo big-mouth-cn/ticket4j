@@ -88,7 +88,6 @@ public class TicketProcess {
                 });
                 LOGGER.info("乘车人信息：{}", persons.toString());
             }
-            
             // 初始化Cookie及登录
             final Ticket4jHttpResponse response = initTicket4jHttpResponse(initialize, user);
             
