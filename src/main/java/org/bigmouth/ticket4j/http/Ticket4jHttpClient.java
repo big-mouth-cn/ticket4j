@@ -49,7 +49,7 @@ public final class Ticket4jHttpClient {
     private DNSDistributeType dnsDistributeType = DNSDistributeType.RANDOM;
     
     public HttpClient buildHttpClient() {
-        return buildHttpClient(false);
+        return buildHttpClient(true);
     }
 
     public HttpClient buildHttpClient(final boolean changeInetAddress) {

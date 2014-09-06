@@ -75,6 +75,9 @@ public class DefaultUser extends AccessSupport implements User {
         Ticket4jHttpResponse ticket4jHttpResponse = new Ticket4jHttpResponse(headers);
         HttpPost post = ticket4jHttpClient.buildPostMethod(uriCheckUser, ticket4jHttpResponse);
         try {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("正在检查用户会话是否有效...");
+            }
             HttpResponse httpResponse = httpClient.execute(post);
             String body = HttpClientUtils.getResponseBody(httpResponse);
             CheckUserResponse response = fromJson(body, CheckUserResponse.class);
@@ -87,7 +90,7 @@ public class DefaultUser extends AccessSupport implements User {
         finally {
             httpClient.getConnectionManager().shutdown();
         }
-        return new CheckUserResponse();
+        return null;
     }
 
     @Override

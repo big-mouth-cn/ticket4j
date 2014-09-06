@@ -13,18 +13,14 @@ public class OrderWaitTimeResponse extends Response {
     public class OrderWaitTime {
 
         private boolean queryOrderWaitTimeStatus;
-
         private int count;
-
+        private int errorCode;
         private int waitTime = 1;
-
         private String requestId;
-
         private int waitCount;
-
         private String tourFlag;
-
         private String orderId;
+        private String msg;
 
         public boolean isSuccessful() {
             return waitTime <= 0;
@@ -86,6 +82,22 @@ public class OrderWaitTimeResponse extends Response {
             this.orderId = orderId;
         }
 
+        public int getErrorCode() {
+            return errorCode;
+        }
+
+        public void setErrorCode(int errorCode) {
+            this.errorCode = errorCode;
+        }
+
+        public String getMsg() {
+            return msg;
+        }
+
+        public void setMsg(String msg) {
+            this.msg = msg;
+        }
+
         @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
@@ -103,5 +115,10 @@ public class OrderWaitTimeResponse extends Response {
     @Override
     public boolean isContinue() {
         return this.data.isSuccessful();
+    }
+
+    @Override
+    public String getMessage() {
+        return this.data.getMsg();
     }
 }

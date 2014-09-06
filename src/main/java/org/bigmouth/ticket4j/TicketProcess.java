@@ -83,11 +83,16 @@ public class TicketProcess {
             final Order order = SpringContextHolder.getBean("order");
             
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("将要预订的车票信息：{} 从 {} 到 {} 的 {}", new String[] {
+                LOGGER.info("预订车票信息：【{} {} 开往 {}({})】", new String[] {
                         trainDate, trainFrom, trainTo, Seat.getDescription(seats)
                 });
                 LOGGER.info("乘车人信息：{}", persons.toString());
+                if (StringUtils.isNotBlank(includeSource))
+                    LOGGER.info("指定车次：{}", includeSource);
+                if (StringUtils.isNotBlank(excludeSource))
+                    LOGGER.info("排除车次：{}", excludeSource);
             }
+            
             // 初始化Cookie及登录
             final Ticket4jHttpResponse response = initTicket4jHttpResponse(initialize, user);
             
@@ -175,9 +180,6 @@ public class TicketProcess {
                 if (submitResponse.isContinue()) {
                     List<Seat> canBuySeats = train.getCanBuySeats(); // 允许购买的席别
                     Seat seat = canBuySeats.get(0);
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("乘车人为 {}，席别为 [{}]。", persons, Seat.getDescription(seat));
-                    }
                     
                     Token token = order.getToken(response);
                     
@@ -225,20 +227,21 @@ public class TicketProcess {
                     
                     ConfirmSingleForQueueResponse confirmResponse = order.confirm(response, queueRequest);
                     if (confirmResponse.isContinue()) {
+                        LOGGER.info("订单已经提交，正在等待结果...");
                         
                         OrderWaitTimeResponse waitTimeResponse = new OrderWaitTimeResponse();
                         do {
                             waitTimeResponse = order.queryOrderWaitTime(response, token);
                             if (!waitTimeResponse.isContinue()) {
-                                LOGGER.info("订单已经提交，正在等待结果，大概还需要 {} 秒", waitTimeResponse.getData().getWaitTime());
+                                int waitTime = waitTimeResponse.getData().getWaitTime();
+                                LOGGER.info("大概还需要 {} 秒，请耐心等待...", waitTime);
                                 Thread.sleep(1000);
                             }
                         } while (!waitTimeResponse.isContinue());
                         
                         if (StringUtils.isBlank(waitTimeResponse.getData().getOrderId())) {
-                            LOGGER.warn("对不起，订单处理失败，原因暂时不明。");
-                            LOGGER.warn(waitTimeResponse.toString());
-                            System.exit(0);
+                            LOGGER.warn(waitTimeResponse.getMessage());
+                            return;
                         }
                         
                         NoCompleteOrderResponse noComplete = new NoCompleteOrderResponse();
@@ -250,7 +253,7 @@ public class TicketProcess {
                                 report.setOrders(noComplete.getData().getOrderDBList());
                                 ticketReport.write(report);
                                 
-                                LOGGER.info("恭喜车票预订成功，请尽快登录12306客运服务后台进行支付。");
+                                LOGGER.info("恭喜！车票预订成功，请尽快使用 {} 登录12306客运服务后台进行支付。", user.getUsername());
                                 System.out.println();
                                 System.out.println(noComplete.toString());
                                 return;
@@ -281,17 +284,26 @@ public class TicketProcess {
     }
 
     private Ticket4jHttpResponse initTicket4jHttpResponse(Initialize initialize, User user) {
+        // Check user session is availability.
+        CheckUserResponse cur = null;
+        do {
+            cur = user.check(cookieCache);
+        } while (null == cur);
+        
+        // Initialize
         Ticket4jHttpResponse response = null;
-        CheckUserResponse cur = user.check(cookieCache);
-        if (!cur.isContinue()) {
-            response = initialize.init();
-            response.setSignIn(false);
-            cookieCache.write(response.getHeaders(), user.getUsername());
+        do {
+            if (!cur.isContinue()) {
+                response = initialize.init();
+                response.setSignIn(false);
+                cookieCache.write(response.getHeaders(), user.getUsername());
+            }
+            else {
+                response = cur.getTicket4jHttpResponse();
+                response.setSignIn(true);
+            }
         }
-        else {
-            response = cur.getTicket4jHttpResponse();
-            response.setSignIn(true);
-        }
+        while (null == response);
         return response;
     }
     

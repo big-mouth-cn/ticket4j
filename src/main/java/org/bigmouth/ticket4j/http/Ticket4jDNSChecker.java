@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -64,9 +63,6 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
 
     @Override
     protected void doInit() {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("正在获取远程DNS列表...");
-        }
         initAddresses();
         
         if (LOGGER.isDebugEnabled()) {
@@ -74,13 +70,7 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
             LOGGER.debug("{}", ArrayUtils.toString(addresses));
         }
         
-        Executors.newFixedThreadPool(1, new ThreadFactory() {
-            
-            @Override
-            public Thread newThread(Runnable r) {
-                return new Thread(r);
-            }
-        }).submit(new Runnable() {
+        Executors.newSingleThreadExecutor().submit(new Runnable() {
             
             @Override
             public void run() {
@@ -156,6 +146,9 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
         HttpClient httpClient = new DefaultHttpClient();
         HttpGet get = new HttpGet(urlDnsResource);
         try {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("正在获取远程DNS列表...");
+            }
             HttpResponse httpResponse = httpClient.execute(get);
             String body = HttpClientUtils.getResponseBody(httpResponse);
             if (StringUtils.isNotBlank(body)) {

@@ -101,8 +101,8 @@ public class DefaultOrder extends AccessSupport implements Order {
         HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
         HttpGet get = ticket4jHttpClient.buildGetMethod(uriInitDc, ticket4jHttpResponse);
         try {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("正在获取 Token 及令牌...");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("正在获取 Token 及令牌...");
             }
             HttpResponse httpResponse = httpClient.execute(get);
             Token token = HttpClientUtils.getResponseBodyAsToken(httpResponse);

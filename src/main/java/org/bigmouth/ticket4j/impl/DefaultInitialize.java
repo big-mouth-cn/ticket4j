@@ -31,6 +31,7 @@ public class DefaultInitialize extends AccessSupport implements Initialize {
             }
             HttpResponse httpResponse = httpClient.execute(get);
             response.setHeaders(httpResponse.getAllHeaders());
+            return response;
         }
         catch (Exception e) {
             LOGGER.error("初始化失败,错误原因：", e.getMessage());
@@ -38,7 +39,7 @@ public class DefaultInitialize extends AccessSupport implements Initialize {
         finally {
             httpClient.getConnectionManager().shutdown();
         }
-        return response;
+        return null;
     }
 
     public void setUriInit(String uriInit) {

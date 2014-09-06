@@ -530,11 +530,13 @@ public class TrainDetails implements Serializable {
     }
     
     private String fillSpace(String numberString) {
-        if (StringUtils.equals(numberString, "--") || 
-                StringUtils.equals(numberString, "有")) {
-            return numberString;
+        if (NumberUtils.isNumber(numberString)) {
+            int num = NumberUtils.toInt(numberString);
+            return String.valueOf((num < 10) ? (" " + num) : num);
         }
-        int num = NumberUtils.toInt(numberString);
-        return String.valueOf((num < 10) ? ("0" + num) : num);
+        if (StringUtils.equals(numberString, "*")) {
+            return " *";
+        }
+        return numberString;
     }
 }

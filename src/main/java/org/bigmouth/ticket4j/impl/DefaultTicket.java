@@ -176,7 +176,7 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             }
         }
         LOGGER.info("{} [{}]", (isCache) ? "缓存" : "最新", hdMessage.toString());
-        return crtServerTime;
+        return (isCache) ? null : crtServerTime;
     }
 
     /**

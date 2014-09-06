@@ -5,9 +5,13 @@ import java.util.Scanner;
 import org.apache.commons.lang3.StringUtils;
 import org.bigmouth.framework.core.SpringContextHolder;
 import org.bigmouth.ticket4j.utils.JVMUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class TicketStartup {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(TicketStartup.class);
     
     public static void main(String[] args) {
         System.out.println("《东皇钟》使用合约");
@@ -26,12 +30,13 @@ public class TicketStartup {
             System.out.println("再见!");
             System.exit(0);
         }
-        
         JVMUtils.bootUsingSpring(new String[] {
                 "config/applicationContext.xml"
         }, args);
         TicketProcess process = SpringContextHolder.getBean("ticketProcess");
         process.start();
-        System.out.println("再见!");
+        
+        if (LOGGER.isInfoEnabled())
+            LOGGER.info("再见!");
     }
 }
