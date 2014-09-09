@@ -14,6 +14,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
+import org.bigmouth.framework.util.DateUtils;
 import org.bigmouth.ticket4j.Order;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
 import org.bigmouth.ticket4j.entity.Response;
@@ -21,11 +22,13 @@ import org.bigmouth.ticket4j.entity.Seat;
 import org.bigmouth.ticket4j.entity.Token;
 import org.bigmouth.ticket4j.entity.request.CheckOrderInfoRequest;
 import org.bigmouth.ticket4j.entity.request.ConfirmSingleForQueueRequest;
+import org.bigmouth.ticket4j.entity.request.QueueCountRequest;
 import org.bigmouth.ticket4j.entity.request.SubmitOrderRequest;
 import org.bigmouth.ticket4j.entity.response.CheckOrderInfoResponse;
 import org.bigmouth.ticket4j.entity.response.ConfirmSingleForQueueResponse;
 import org.bigmouth.ticket4j.entity.response.NoCompleteOrderResponse;
 import org.bigmouth.ticket4j.entity.response.OrderWaitTimeResponse;
+import org.bigmouth.ticket4j.entity.response.QueueCountResponse;
 import org.bigmouth.ticket4j.entity.response.SubmitOrderResponse;
 import org.bigmouth.ticket4j.entity.train.Train;
 import org.bigmouth.ticket4j.entity.train.TrainDetails;
@@ -46,6 +49,7 @@ public class DefaultOrder extends AccessSupport implements Order {
     private String uriSubmitOrder = Ticket4jDefaults.URI_SUBMIT_ORDER;
     private String uriInitDc = Ticket4jDefaults.URI_INIT_DC;
     private String uriCheckOrderInfo = Ticket4jDefaults.URI_CHECK_ORDER_INFO;
+    private String uriGetQueueCount = Ticket4jDefaults.URI_GET_QUEUE_COUNT;
     private String uriConfirmSingleForQueue = Ticket4jDefaults.URI_CONFIRM_SINGLE_FOR_QUEUE;
     private String uriQueryNoComplete = Ticket4jDefaults.URI_QUERY_NO_COMPLETE;
     private String uriQueryOrderWaitTime = Ticket4jDefaults.URI_QUERY_ORDER_WAIT_TIME;
@@ -149,6 +153,36 @@ public class DefaultOrder extends AccessSupport implements Order {
     }
 
     @Override
+    public QueueCountResponse getQueueCount(Ticket4jHttpResponse ticket4jHttpResponse, QueueCountRequest forQueueRequest) {
+        HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
+        HttpPost post = ticket4jHttpClient.buildPostMethod(uriGetQueueCount, ticket4jHttpResponse);
+        try {
+            TrainDetails trainDetails = forQueueRequest.getTrainDetails();
+            addPair(post, new NameValuePair[] {
+                    new BasicNameValuePair("train_date", DateUtils.convertString2Date(forQueueRequest.getTrainDate(), "yyyy-MM-dd").toString()),
+                    new BasicNameValuePair("train_no", trainDetails.getTrain_no()),
+                    new BasicNameValuePair("stationTrainCode", trainDetails.getStation_train_code()),
+                    new BasicNameValuePair("seatType", trainDetails.getSeat_types()),
+                    new BasicNameValuePair("fromStationTelecode", trainDetails.getFrom_station_telecode()),
+                    new BasicNameValuePair("toStationTelecode", trainDetails.getTo_station_telecode()),
+                    new BasicNameValuePair("leftTicket", trainDetails.getYp_info()),
+                    new BasicNameValuePair("purpose_codes", "00"),
+                    new BasicNameValuePair("REPEAT_SUBMIT_TOKEN", forQueueRequest.getToken().getToken())
+            });
+            HttpResponse httpResponse = httpClient.execute(post);
+            String body = HttpClientUtils.getResponseBody(httpResponse);
+            QueueCountResponse response = fromJson(body, QueueCountResponse.class);
+            if (!response.isStatus())
+                throw new RuntimeException(response.getMessage());
+            return response;
+        }
+        catch (Exception e) {
+            LOGGER.error("查询排队信息失败,错误原因： {}", e.getMessage());
+        }
+        return null;
+    }
+    
+    @Override
     public ConfirmSingleForQueueResponse confirm(Ticket4jHttpResponse ticket4jHttpResponse,
             ConfirmSingleForQueueRequest forQueueRequest) {
         HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
@@ -243,5 +277,9 @@ public class DefaultOrder extends AccessSupport implements Order {
 
     public void setUriQueryOrderWaitTime(String uriQueryOrderWaitTime) {
         this.uriQueryOrderWaitTime = uriQueryOrderWaitTime;
+    }
+
+    public void setUriGetQueueCount(String uriGetQueueCount) {
+        this.uriGetQueueCount = uriGetQueueCount;
     }
 }

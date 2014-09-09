@@ -65,9 +65,6 @@ public class DefaultTicket extends AccessSupport implements Ticket {
                 break;
             }
         }
-        if (!isContinue(response)) {
-            throw new RuntimeException("查询车票失败!错误原因：" + response.toString());
-        }
         return response;
     }
 

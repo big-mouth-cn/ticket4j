@@ -32,6 +32,7 @@
 		<property name="port" value="${http.port}" />
 		<property name="timeout" value="${http.timeout}" />
 		<property name="dnsDistributeType" value="${dns.distribute.type}" />
+		<property name="allRequestSwitch" value="${dns.all.request.switch}" />
 	</bean>
 
 	<bean id="initialize" class="org.bigmouth.ticket4j.impl.DefaultInitialize">
@@ -66,6 +67,7 @@
 		<property name="uriSubmitOrder" value="${uri.submit.order}" />
 		<property name="uriInitDc" value="${uri.init.dc}" />
 		<property name="uriCheckOrderInfo" value="${uri.check.order}" />
+		<property name="uriGetQueueCount" value="${uri.queue.count}" />
 		<property name="uriConfirmSingleForQueue" value="${uri.confirm.single.queue}" />
 		<property name="uriQueryNoComplete" value="${uri.query.no.complete}" />
 		<property name="uriQueryOrderWaitTime" value="${uri.query.order.waitTime}" />

@@ -47,9 +47,10 @@ public final class Ticket4jHttpClient {
     private int port = Ticket4jDefaults.PORT;
     private int timeout = Ticket4jDefaults.TIME_OUT;
     private DNSDistributeType dnsDistributeType = DNSDistributeType.RANDOM;
+    private boolean allRequestSwitch = false;
     
     public HttpClient buildHttpClient() {
-        return buildHttpClient(true);
+        return buildHttpClient(allRequestSwitch);
     }
 
     public HttpClient buildHttpClient(final boolean changeInetAddress) {
@@ -282,5 +283,9 @@ public final class Ticket4jHttpClient {
 
     public void setDnsDistributeType(DNSDistributeType dnsDistributeType) {
         this.dnsDistributeType = dnsDistributeType;
+    }
+
+    public void setAllRequestSwitch(boolean allRequestSwitch) {
+        this.allRequestSwitch = allRequestSwitch;
     }
 }

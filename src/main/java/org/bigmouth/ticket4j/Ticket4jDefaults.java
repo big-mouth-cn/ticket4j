@@ -38,6 +38,7 @@ public final class Ticket4jDefaults {
     public static final String URI_SUBMIT_ORDER = "/otn/leftTicket/submitOrderRequest";
     public static final String URI_INIT_DC = "/otn/confirmPassenger/initDc";
     public static final String URI_CHECK_ORDER_INFO = "/otn/confirmPassenger/checkOrderInfo";
+    public static final String URI_GET_QUEUE_COUNT = "/otn/confirmPassenger/getQueueCount";
     public static final String URI_CONFIRM_SINGLE_FOR_QUEUE = "/otn/confirmPassenger/confirmSingleForQueue";
     public static final String URI_QUERY_ORDER_WAIT_TIME = "/otn/confirmPassenger/queryOrderWaitTime";
     public static final String URI_QUERY_NO_COMPLETE = "/otn/queryOrder/queryMyOrderNoComplete";

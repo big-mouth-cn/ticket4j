@@ -19,6 +19,7 @@ import org.bigmouth.ticket4j.entity.Token;
 import org.bigmouth.ticket4j.entity.request.CheckOrderInfoRequest;
 import org.bigmouth.ticket4j.entity.request.ConfirmSingleForQueueRequest;
 import org.bigmouth.ticket4j.entity.request.QueryTicketRequest;
+import org.bigmouth.ticket4j.entity.request.QueueCountRequest;
 import org.bigmouth.ticket4j.entity.request.SubmitOrderRequest;
 import org.bigmouth.ticket4j.entity.response.CheckOrderInfoResponse;
 import org.bigmouth.ticket4j.entity.response.CheckUserResponse;
@@ -27,6 +28,7 @@ import org.bigmouth.ticket4j.entity.response.NoCompleteOrderResponse;
 import org.bigmouth.ticket4j.entity.response.OrderWaitTimeResponse;
 import org.bigmouth.ticket4j.entity.response.QueryPassengerResponse;
 import org.bigmouth.ticket4j.entity.response.QueryTicketResponse;
+import org.bigmouth.ticket4j.entity.response.QueueCountResponse;
 import org.bigmouth.ticket4j.entity.train.Train;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
 import org.bigmouth.ticket4j.report.Report;
@@ -139,6 +141,9 @@ public class TicketProcess {
                 condition.setSeats(seats);
                 condition.setTicketQuantity(persons.size());
                 QueryTicketResponse result = ticket.query(response, condition);
+                if (null == result) {
+                    continue;
+                }
                 allows = result.getAllows();
                 if (CollectionUtils.isEmpty(allows)) {
                     LOGGER.info("暂时没有符合预订条件的车次。");
@@ -215,6 +220,17 @@ public class TicketProcess {
                             }
                         }
                     } while (!checkOrderInfo.isContinue());
+                    
+                    // 排队
+                    QueueCountRequest qcr = new QueueCountRequest();
+                    QueueCountResponse qcresp = null;
+                    qcr.setToken(token);
+                    qcr.setTrainDate(trainDate);
+                    qcr.setTrainDetails(train.getQueryLeftNewDTO());
+                    do {
+                        qcresp = order.getQueueCount(response, qcr);
+                        LOGGER.info("当前排队人数：{}", qcresp.getData().getCountT());
+                    } while (qcresp == null || !qcresp.isContinue());
                     
                     // 提交订单
                     ConfirmSingleForQueueRequest queueRequest = new ConfirmSingleForQueueRequest();
