@@ -65,7 +65,7 @@ public class TicketProcess {
     private boolean recognition = true;
     
     private Integer[] givenTime;
-    private int stopMinutesAgo;
+    private String stopMinutesAgo;
 
     public TicketProcess(CookieCache cookieCache, AntiUtils antiUtils, TicketReport ticketReport) {
         this.cookieCache = cookieCache;
@@ -149,7 +149,7 @@ public class TicketProcess {
                     LOGGER.info("暂时没有符合预订条件的车次。");
                     
                     long millis = queryTicketSleepTime;
-                    if (ArrayUtils.isNotEmpty(givenTime) && stopMinutesAgo != 0) {
+                    if (ArrayUtils.isNotEmpty(givenTime) && NumberUtils.toInt(stopMinutesAgo) != 0) {
                         // 定时查询
                         Date serverTime = ticket.getServerTime();
                         if (null != serverTime) {
@@ -164,7 +164,7 @@ public class TicketProcess {
                                 
                                 Calendar stop = Calendar.getInstance();
                                 stop.setTime(given.getTime());
-                                stop.set(Calendar.MINUTE, time - stopMinutesAgo);
+                                stop.set(Calendar.MINUTE, time - NumberUtils.toInt(stopMinutesAgo));
                                 stop.set(Calendar.SECOND, 0);
                                 
                                 if (serverTime.getTime() >= stop.getTimeInMillis() && serverTime.getTime() < given.getTimeInMillis()) {
@@ -181,7 +181,14 @@ public class TicketProcess {
             
             for (final Train train : allows) {
                 SubmitOrderRequest submitOrderRequest = new SubmitOrderRequest(trainDate, trainDate, condition.getPurposeCodes(), train);
-                Response submitResponse = order.submit(response, submitOrderRequest);
+                
+                Response submitResponse = null;
+                do {
+                    submitResponse = order.submit(response, submitOrderRequest);
+                    if (null == submitResponse) 
+                        continue;
+                } while (!submitResponse.isContinue());
+                
                 if (submitResponse.isContinue()) {
                     List<Seat> canBuySeats = train.getCanBuySeats(); // 允许购买的席别
                     Seat seat = canBuySeats.get(0);
@@ -191,11 +198,13 @@ public class TicketProcess {
                     // 检查订单完整性
                     String seatTypes = train.getQueryLeftNewDTO().getSeat_types();
                     String passengerTicketStr = PersonUtils.toPassengerTicketStr(persons, seat, seatTypes);
+                    String oldPassengerTicket = PersonUtils.toOldPassengerTicket(persons, seat, seatTypes);
                     
                     CheckOrderInfoRequest checkOrderInfoRequest = new CheckOrderInfoRequest();
                     checkOrderInfoRequest.setRepeatSubmitToken(token.getToken());
                     checkOrderInfoRequest.setPassengerTicketStr(passengerTicketStr);
-                    CheckOrderInfoResponse checkOrderInfo = new CheckOrderInfoResponse();
+                    checkOrderInfoRequest.setOldPassengerStr(oldPassengerTicket);
+                    CheckOrderInfoResponse checkOrderInfo = null;
                     byte[] code = null;
                     do {
                         File orderPassCode = passCode.getOrderPassCode(response);
@@ -210,6 +219,9 @@ public class TicketProcess {
                         checkOrderInfoRequest.setRandCode(new String(code));
                         
                         checkOrderInfo = order.checkOrderInfo(response, checkOrderInfoRequest);
+                        if (null == checkOrderInfo) {
+                            continue;
+                        }
                         if (checkOrderInfo.isContinue()) {
                             break;
                         }
@@ -237,21 +249,37 @@ public class TicketProcess {
                     queueRequest.setKeyCheckIsChange(token.getOrderKey());
                     queueRequest.setLeftTicketStr(train.getQueryLeftNewDTO().getYp_info());
                     queueRequest.setPassengerTicketStr(passengerTicketStr);
+                    queueRequest.setOldPassengerStr(oldPassengerTicket);
                     queueRequest.setRandCode(new String(code));
                     queueRequest.setRepeatSubmitToken(token.getToken());
                     queueRequest.setTrainLocation(train.getQueryLeftNewDTO().getLocation_code());
                     
-                    ConfirmSingleForQueueResponse confirmResponse = order.confirm(response, queueRequest);
+                    ConfirmSingleForQueueResponse confirmResponse = null;
+                    
+                    do {
+                        confirmResponse = order.confirmSingleForQueue(response, queueRequest);
+                        if (null == confirmResponse)
+                            continue;
+                    } while (!confirmResponse.isContinue());
+                    
+                    
                     if (confirmResponse.isContinue()) {
                         LOGGER.info("订单已经提交，正在等待结果...");
                         
                         OrderWaitTimeResponse waitTimeResponse = new OrderWaitTimeResponse();
                         do {
                             waitTimeResponse = order.queryOrderWaitTime(response, token);
+                            if (null == waitTimeResponse)
+                                continue;
+                            
                             if (!waitTimeResponse.isContinue()) {
                                 int waitTime = waitTimeResponse.getData().getWaitTime();
                                 LOGGER.info("大概还需要 {} 秒，请耐心等待...", waitTime);
-                                Thread.sleep(1000);
+                                try {
+                                    Thread.sleep(1000);
+                                }
+                                catch (InterruptedException e) {
+                                }
                             }
                         } while (!waitTimeResponse.isContinue());
                         
@@ -263,6 +291,8 @@ public class TicketProcess {
                         NoCompleteOrderResponse noComplete = new NoCompleteOrderResponse();
                         do {
                             noComplete = order.queryNoComplete(response);
+                            if (null == noComplete)
+                                continue;
                             if (noComplete.isContinue()) {
                                 Report report = new Report();
                                 report.setUsername(user.getUsername());
@@ -296,6 +326,7 @@ public class TicketProcess {
             }
         }
         catch (Exception e) {
+            LOGGER.error("start: ", e);
         }
     }
 
@@ -377,7 +408,7 @@ public class TicketProcess {
         }
     }
 
-    public void setStopMinutesAgo(int stopMinutesAgo) {
+    public void setStopMinutesAgo(String stopMinutesAgo) {
         this.stopMinutesAgo = stopMinutesAgo;
     }
 }

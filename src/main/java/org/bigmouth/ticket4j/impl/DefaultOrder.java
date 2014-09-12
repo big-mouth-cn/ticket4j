@@ -183,7 +183,7 @@ public class DefaultOrder extends AccessSupport implements Order {
     }
     
     @Override
-    public ConfirmSingleForQueueResponse confirm(Ticket4jHttpResponse ticket4jHttpResponse,
+    public ConfirmSingleForQueueResponse confirmSingleForQueue(Ticket4jHttpResponse ticket4jHttpResponse,
             ConfirmSingleForQueueRequest forQueueRequest) {
         HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
         HttpPost post = ticket4jHttpClient.buildPostMethod(uriConfirmSingleForQueue, ticket4jHttpResponse);

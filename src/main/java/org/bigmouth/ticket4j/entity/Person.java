@@ -73,8 +73,8 @@ public class Person {
                 .append(ticketType).append(",").append(name).append(",1,").append(card).append(",,N").toString();
     }
 
-    public String toPassengerTicket() {
-        return "_ _ _ _ _";
+    public String toPassengerTicket(Seat seat, String seatTypes) {
+        return new StringBuilder(128).append(name).append(",1,").append(card).append(",").append(Seat.getSubmitSeatType(seat, seatTypes)).toString();
     }
 
     public static List<Person> of(String string) {

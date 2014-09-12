@@ -1,7 +1,6 @@
 package org.bigmouth.ticket4j.impl;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -15,6 +14,7 @@ import org.bigmouth.ticket4j.entity.Response;
 import org.bigmouth.ticket4j.entity.response.CheckUserResponse;
 import org.bigmouth.ticket4j.entity.response.LoginSuggestResponse;
 import org.bigmouth.ticket4j.entity.response.QueryPassengerResponse;
+import org.bigmouth.ticket4j.http.Ticket4jHeader;
 import org.bigmouth.ticket4j.http.Ticket4jHttpClient;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
 import org.bigmouth.ticket4j.utils.HttpClientUtils;
@@ -41,6 +41,11 @@ public class DefaultUser extends AccessSupport implements User {
 
     @Override
     public Response login(String passCode, Ticket4jHttpResponse ticket4jHttpResponse) {
+        return login(passCode, password, passCode, ticket4jHttpResponse);
+    }
+
+    @Override
+    public Response login(String username, String passwd, String passCode, Ticket4jHttpResponse ticket4jHttpResponse) {
         LoginSuggestResponse result = new LoginSuggestResponse();
         HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
         HttpPost post = ticket4jHttpClient.buildPostMethod(uriLogin, ticket4jHttpResponse);
@@ -48,7 +53,7 @@ public class DefaultUser extends AccessSupport implements User {
         try {
             addPair(post, new NameValuePair[] {
                     new BasicNameValuePair("loginUserDTO.user_name", username) ,
-                    new BasicNameValuePair("userDTO.password", password),
+                    new BasicNameValuePair("userDTO.password", passwd),
                     new BasicNameValuePair("randCode", passCode)
             });
             if (LOGGER.isInfoEnabled()) 
@@ -69,7 +74,7 @@ public class DefaultUser extends AccessSupport implements User {
     @Override
     public CheckUserResponse check(CookieCache cookieCache) {
         HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
-        Header[] headers = cookieCache.read(username);
+        Ticket4jHeader[] headers = cookieCache.read(username);
         if (ArrayUtils.isEmpty(headers))
             return new CheckUserResponse();
         Ticket4jHttpResponse ticket4jHttpResponse = new Ticket4jHttpResponse(headers);

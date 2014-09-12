@@ -1,14 +1,20 @@
 package org.bigmouth.ticket4j.impl;
 
+import java.util.List;
+
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.bigmouth.ticket4j.Initialize;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
+import org.bigmouth.ticket4j.http.Ticket4jHeader;
 import org.bigmouth.ticket4j.http.Ticket4jHttpClient;
 import org.bigmouth.ticket4j.http.Ticket4jHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 
 public class DefaultInitialize extends AccessSupport implements Initialize {
@@ -30,7 +36,14 @@ public class DefaultInitialize extends AccessSupport implements Initialize {
                 LOGGER.info("正在初始化...");
             }
             HttpResponse httpResponse = httpClient.execute(get);
-            response.setHeaders(httpResponse.getAllHeaders());
+            
+            Header[] allHeaders = httpResponse.getAllHeaders();
+            List<Header> headers = Lists.newArrayList();
+            for (Header header : allHeaders) {
+                headers.add(new Ticket4jHeader(header));
+            }
+            response.setHeaders(headers.toArray(new Ticket4jHeader[0]));
+            
             return response;
         }
         catch (Exception e) {

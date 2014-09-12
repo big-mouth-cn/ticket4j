@@ -10,9 +10,9 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
 import org.bigmouth.framework.util.PathUtils;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
+import org.bigmouth.ticket4j.http.Ticket4jHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ public class DefaultCookieCache implements CookieCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCookieCache.class);
 
     @Override
-    public void write(Header[] headers, String id) {
+    public void write(Ticket4jHeader[] headers, String id) {
         FileOutputStream fos = null;
         ObjectOutputStream oos = null;
         try {
@@ -51,7 +51,7 @@ public class DefaultCookieCache implements CookieCache {
     }
 
     @Override
-    public Header[] read(String id) {
+    public Ticket4jHeader[] read(String id) {
         FileInputStream fis = null;
         ObjectInputStream ois = null;
         
@@ -62,8 +62,8 @@ public class DefaultCookieCache implements CookieCache {
             fis = new FileInputStream(file);
             ois = new ObjectInputStream(fis);
             @SuppressWarnings("unchecked")
-            List<Header> object = (List<Header>) ois.readObject();
-            return object.toArray(new Header[0]);
+            List<Ticket4jHeader> object = (List<Ticket4jHeader>) ois.readObject();
+            return object.toArray(new Ticket4jHeader[0]);
         }
         catch (FileNotFoundException e) {
             LOGGER.warn("Cookie 从缓存读取失败,错误原因：{}", e.getMessage());

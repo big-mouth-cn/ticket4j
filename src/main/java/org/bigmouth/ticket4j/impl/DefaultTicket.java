@@ -54,22 +54,34 @@ public class DefaultTicket extends AccessSupport implements Ticket {
         QueryTicketResponse response = null;
         if (StringUtils.isNotBlank(available)) {
             response = queryTicket(available, ticket4jHttpResponse, condition);
-            if (isContinue(response)) 
+            if (isNotSwitchURL(response)) 
                 return response;
         }
         String[] uris = StringUtils.split(uriQueryTicketAddrs, ",");
         for (String uri : uris) {
             response = queryTicket(uri, ticket4jHttpResponse, condition);
-            if (isContinue(response)) {
+            if (isNotSwitchURL(response)) {
                 available = uri;
-                break;
+                return response;
             }
+            else {
+                LOGGER.warn("查票地址 {} 无效，正在切换..", uri);
+            }
+        }
+        if (null != response) {
+            // 没有有效的查票地址，那么试图从返回的结果中获取
+            String c_url = new StringBuilder(Ticket4jDefaults.URI).append("/").append(response.getC_url()).toString();
+            LOGGER.warn("试图从返回的结果中获取查票地址...", c_url);
+            available = c_url;
         }
         return response;
     }
 
-    private boolean isContinue(QueryTicketResponse response) {
-        return null != response && response.isStatus();
+    private boolean isNotSwitchURL(QueryTicketResponse response) {
+        if (null == response) 
+            return false;
+        return (null != response && response.isStatus()) 
+                    || StringUtils.isBlank(response.getC_url());
     }
 
     private QueryTicketResponse queryTicket(String uri, Ticket4jHttpResponse ticket4jHttpResponse, QueryTicketRequest condition) {

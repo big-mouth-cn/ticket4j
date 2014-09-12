@@ -28,4 +28,12 @@ public final class PersonUtils {
         }
         return StringUtils.substring(result.toString(), 0, result.length() - 1);
     }
+    
+    public static String toOldPassengerTicket(List<Person> persons, Seat seat, String seatTypes) {
+        StringBuilder result = new StringBuilder(128);
+        for (Person person : persons) {
+            result.append(person.toPassengerTicket(seat, seatTypes)).append("_");
+        }
+        return StringUtils.substring(result.toString(), 0, result.length() - 1);
+    }
 }

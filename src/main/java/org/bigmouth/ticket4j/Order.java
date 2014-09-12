@@ -24,7 +24,7 @@ public interface Order {
     
     QueueCountResponse getQueueCount(Ticket4jHttpResponse ticket4jHttpResponse, QueueCountRequest forQueueRequest);
     
-    ConfirmSingleForQueueResponse confirm(Ticket4jHttpResponse ticket4jHttpResponse, ConfirmSingleForQueueRequest forQueueRequest);
+    ConfirmSingleForQueueResponse confirmSingleForQueue(Ticket4jHttpResponse ticket4jHttpResponse, ConfirmSingleForQueueRequest forQueueRequest);
     
     NoCompleteOrderResponse queryNoComplete(Ticket4jHttpResponse ticket4jHttpResponse);
     

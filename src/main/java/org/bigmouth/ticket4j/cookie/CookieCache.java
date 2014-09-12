@@ -1,11 +1,11 @@
 package org.bigmouth.ticket4j.cookie;
 
-import org.apache.http.Header;
+import org.bigmouth.ticket4j.http.Ticket4jHeader;
 
 
 public interface CookieCache {
 
-    void write(Header[] headers, String id);
+    void write(Ticket4jHeader[] headers, String id);
     
-    Header[] read(String id);
+    Ticket4jHeader[] read(String id);
 }

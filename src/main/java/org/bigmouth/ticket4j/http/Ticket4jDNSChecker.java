@@ -65,9 +65,9 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
     protected void doInit() {
         initAddresses();
         
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("开始对DNS列表进行速度测试...");
-            LOGGER.debug("{}", ArrayUtils.toString(addresses));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("开始对DNS列表进行速度测试...");
+            LOGGER.info("{}", ArrayUtils.toString(addresses));
         }
         
         Executors.newSingleThreadExecutor().submit(new Runnable() {
@@ -78,13 +78,13 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
                     while (true) {
                         testSpeed();
                         if (CollectionUtils.isNotEmpty(MAPPINGS)) {
-                            if (LOGGER.isDebugEnabled()) {
+                            if (LOGGER.isInfoEnabled()) {
                                 StringBuilder result = new StringBuilder(128);
                                 result.append("当前可用的DNS服务数：").append(MAPPINGS.size()).append(" 个，响应速度：最快 ")
                                         .append(MAPPINGS.get(0).getConsumeTimeInMillis()).append(" ms、最慢 ")
                                         .append(MAPPINGS.get(MAPPINGS.size() - 1).getConsumeTimeInMillis())
                                         .append(" ms");
-                                LOGGER.debug(result.toString());
+                                LOGGER.info(result.toString());
                             }
                         }
                         try {
@@ -98,8 +98,8 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
 
             private void testSpeed() {
                 for (String ip : addresses) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("正在测试 {} 的速度...", ip);
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("正在测试 {} 的速度...", ip);
                     }
                     Ticket4jDns dns = new Ticket4jDns();
                     HttpClient httpClient = ticket4jHttpClient.buildHttpClient(ip);
@@ -115,8 +115,8 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
                             dns.setInetAddresses(InetAddressUtils.getByAddress(ip));
                             dns.setConsumeTimeInMillis(time);
                             dns.setTimeout(false);
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("{} 响应成功，消耗时间 {} ms...", ip, time);
+                            if (LOGGER.isInfoEnabled()) {
+                                LOGGER.info("{} 响应成功，消耗时间 {} ms...", ip, time);
                             }
                             if (time <= limitConsumeTimeInMillis) {
                                 if (!MAPPINGS.contains(dns)) {
@@ -126,8 +126,8 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
                             }
                         }
                         else {
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("{} 响应失败，错误代码 {}...", ip, statusCode);
+                            if (LOGGER.isInfoEnabled()) {
+                                LOGGER.info("{} 响应失败，错误代码 {}...", ip, statusCode);
                             }
                         }
                     }
@@ -146,8 +146,8 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
         HttpClient httpClient = new DefaultHttpClient();
         HttpGet get = new HttpGet(urlDnsResource);
         try {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("正在获取远程DNS列表...");
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("正在获取远程DNS列表...");
             }
             HttpResponse httpResponse = httpClient.execute(get);
             String body = HttpClientUtils.getResponseBody(httpResponse);

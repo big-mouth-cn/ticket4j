@@ -22,6 +22,8 @@ public interface User {
 
     Response login(String passCode, Ticket4jHttpResponse ticket4jHttpResponse);
     
+    Response login(String username, String passwd, String passCode, Ticket4jHttpResponse ticket4jHttpResponse);
+    
     CheckUserResponse check(CookieCache cookieCache);
     
     QueryPassengerResponse queryPassenger(Ticket4jHttpResponse ticket4jHttpResponse);
