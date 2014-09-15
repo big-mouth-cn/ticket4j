@@ -129,9 +129,9 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             List<Train> allows = result.filter(includes, excludes, seats, ticketQuantity);
             
             // 将所有未过滤的车次打印出来
-            if (LOGGER.isInfoEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
                 for (Train train : result.getData()) {
-                    LOGGER.info(train.toString());
+                    LOGGER.debug(train.toString());
                 }
             }
             
@@ -153,11 +153,11 @@ public class DefaultTicket extends AccessSupport implements Ticket {
         }
         catch (Exception e) {
             LOGGER.error("查询车票失败!错误原因：{}", e.getMessage());
+            throw new RuntimeException(e);
         }
         finally {
             httpClient.getConnectionManager().shutdown();
         }
-        return null;
     }
 
     private Date printCacheHeaders(HttpResponse httpResponse) {

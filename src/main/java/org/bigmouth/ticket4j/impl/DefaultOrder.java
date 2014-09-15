@@ -93,11 +93,11 @@ public class DefaultOrder extends AccessSupport implements Order {
         }
         catch (Exception e) {
             LOGGER.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         finally {
             httpClient.getConnectionManager().shutdown();
         }
-        return null;
     }
     
     @Override
@@ -113,9 +113,9 @@ public class DefaultOrder extends AccessSupport implements Order {
             return token;
         }
         catch (Exception e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("getToken:", e.getMessage());
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     @Override
@@ -148,8 +148,8 @@ public class DefaultOrder extends AccessSupport implements Order {
         }
         catch (Exception e) {
             LOGGER.error("检查订单信息失败,错误原因：{}", e.getMessage());
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     @Override
@@ -251,8 +251,8 @@ public class DefaultOrder extends AccessSupport implements Order {
         }
         catch (Exception e) {
             LOGGER.error("查询未完成订单失败,错误原因： {}", e.getMessage());
+            throw new RuntimeException("查询未完成订单失败,错误原因： " + e.getMessage());
         }
-        return null;
     }
 
     public void setUriSubmitOrder(String uriSubmitOrder) {

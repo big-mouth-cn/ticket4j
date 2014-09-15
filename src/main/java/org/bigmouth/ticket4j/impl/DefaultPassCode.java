@@ -80,11 +80,11 @@ public class DefaultPassCode extends AccessSupport implements PassCode {
         }
         catch (Exception e) {
             LOGGER.error("getPassCode: ", e);
+            throw new RuntimeException(e);
         }
         finally {
             httpClient.getConnectionManager().shutdown();
         }
-        return null;
     }
 
     @Override

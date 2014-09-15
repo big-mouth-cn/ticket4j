@@ -77,12 +77,12 @@ public class Person {
         return new StringBuilder(128).append(name).append(",1,").append(card).append(",").append(Seat.getSubmitSeatType(seat, seatTypes)).toString();
     }
 
-    public static List<Person> of(String string) {
+    public static List<Person> of(String string, boolean convert) {
         List<Person> persons = Lists.newArrayList();
         if (StringUtils.isBlank(string)) {
             return persons;
         }
-        String[] personsString = StringUtils.split(CharsetUtils.convert(string), ",");
+        String[] personsString = StringUtils.split(convert ? CharsetUtils.convert(string) : string, ",");
         if (ArrayUtils.isEmpty(personsString))
             return persons;
         for (String personString : personsString) {
@@ -108,6 +108,10 @@ public class Person {
             persons.add(person);
         }
         return persons;
+    }
+    
+    public static List<Person> of(String string) {
+        return of(string, true);
     }
     
     @Override
