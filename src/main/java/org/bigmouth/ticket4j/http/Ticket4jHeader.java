@@ -1,5 +1,7 @@
 package org.bigmouth.ticket4j.http;
 
+import java.io.Serializable;
+
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.ParseException;
@@ -7,8 +9,9 @@ import org.apache.http.message.BasicHeaderValueParser;
 
 import com.google.common.base.Preconditions;
 
-public class Ticket4jHeader implements Header {
+public class Ticket4jHeader implements Header, Serializable {
 
+    private static final long serialVersionUID = 4007663717913377765L;
     private String name;
     private String value;
 

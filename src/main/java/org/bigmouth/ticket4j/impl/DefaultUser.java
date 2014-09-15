@@ -10,7 +10,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
 import org.bigmouth.ticket4j.User;
 import org.bigmouth.ticket4j.cookie.CookieCache;
-import org.bigmouth.ticket4j.entity.Response;
 import org.bigmouth.ticket4j.entity.response.CheckUserResponse;
 import org.bigmouth.ticket4j.entity.response.LoginSuggestResponse;
 import org.bigmouth.ticket4j.entity.response.QueryPassengerResponse;
@@ -40,12 +39,12 @@ public class DefaultUser extends AccessSupport implements User {
     }
 
     @Override
-    public Response login(String passCode, Ticket4jHttpResponse ticket4jHttpResponse) {
-        return login(passCode, password, passCode, ticket4jHttpResponse);
+    public LoginSuggestResponse login(String passCode, Ticket4jHttpResponse ticket4jHttpResponse) {
+        return login(username, password, passCode, ticket4jHttpResponse);
     }
 
     @Override
-    public Response login(String username, String passwd, String passCode, Ticket4jHttpResponse ticket4jHttpResponse) {
+    public LoginSuggestResponse login(String username, String passwd, String passCode, Ticket4jHttpResponse ticket4jHttpResponse) {
         LoginSuggestResponse result = new LoginSuggestResponse();
         HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
         HttpPost post = ticket4jHttpClient.buildPostMethod(uriLogin, ticket4jHttpResponse);
@@ -73,11 +72,16 @@ public class DefaultUser extends AccessSupport implements User {
 
     @Override
     public CheckUserResponse check(CookieCache cookieCache) {
-        HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
         Ticket4jHeader[] headers = cookieCache.read(username);
         if (ArrayUtils.isEmpty(headers))
             return new CheckUserResponse();
         Ticket4jHttpResponse ticket4jHttpResponse = new Ticket4jHttpResponse(headers);
+        return check(ticket4jHttpResponse);
+    }
+
+    @Override
+    public CheckUserResponse check(Ticket4jHttpResponse ticket4jHttpResponse) {
+        HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
         HttpPost post = ticket4jHttpClient.buildPostMethod(uriCheckUser, ticket4jHttpResponse);
         try {
             if (LOGGER.isInfoEnabled()) {
@@ -95,7 +99,7 @@ public class DefaultUser extends AccessSupport implements User {
         finally {
             httpClient.getConnectionManager().shutdown();
         }
-        return null;
+        return new CheckUserResponse();
     }
 
     @Override

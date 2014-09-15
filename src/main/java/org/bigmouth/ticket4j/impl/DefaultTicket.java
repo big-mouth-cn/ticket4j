@@ -162,7 +162,7 @@ public class DefaultTicket extends AccessSupport implements Ticket {
 
     private Date printCacheHeaders(HttpResponse httpResponse) {
         StringBuilder hdMessage = new StringBuilder();
-        boolean isCache = false;
+        boolean isCache = true;
         Date crtServerTime = null;
         for (Header header : httpResponse.getAllHeaders()) {
             if (StringUtils.equals("X-Via", header.getName())) {
@@ -179,9 +179,9 @@ public class DefaultTicket extends AccessSupport implements Ticket {
                 }
                 hdMessage.append(time).append(" ");
             }
-            else if (StringUtils.equals("Age", header.getName())) {
+            else if (StringUtils.equals("Server", header.getName())) {
                 // Cache
-                isCache = true;
+                isCache = false;
             }
         }
         LOGGER.info("{} [{}]", (isCache) ? "缓存" : "最新", hdMessage.toString());

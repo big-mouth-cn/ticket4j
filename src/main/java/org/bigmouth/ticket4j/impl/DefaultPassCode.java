@@ -20,7 +20,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.bigmouth.framework.util.PathUtils;
 import org.bigmouth.ticket4j.PassCode;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
-import org.bigmouth.ticket4j.entity.Response;
 import org.bigmouth.ticket4j.entity.Token;
 import org.bigmouth.ticket4j.entity.response.CheckPassCodeResponse;
 import org.bigmouth.ticket4j.http.Ticket4jHttpClient;
@@ -89,17 +88,17 @@ public class DefaultPassCode extends AccessSupport implements PassCode {
     }
 
     @Override
-    public Response checkLogin(Ticket4jHttpResponse response, String passCode) {
+    public CheckPassCodeResponse checkLogin(Ticket4jHttpResponse response, String passCode) {
         return check(response, TYPE_LOGIN, passCode, null);
     }
 
     @Override
-    public Response checkOrder(Ticket4jHttpResponse response, String passCode, Token token) {
+    public CheckPassCodeResponse checkOrder(Ticket4jHttpResponse response, String passCode, Token token) {
         return check(response, TYPE_ORDER, passCode, token);
     }
 
     @Override
-    public Response check(Ticket4jHttpResponse response, String type, String passCode, Token token) {
+    public CheckPassCodeResponse check(Ticket4jHttpResponse response, String type, String passCode, Token token) {
         HttpClient httpClient = ticket4jHttpClient.buildHttpClient();
         HttpPost post = ticket4jHttpClient.buildPostMethod(uriCheckPassCode, response);
         List<NameValuePair> pairs = new ArrayList<NameValuePair>();
@@ -135,7 +134,7 @@ public class DefaultPassCode extends AccessSupport implements PassCode {
         catch (IOException e) {
             LOGGER.error("check: ", e);
         }
-        return null;
+        return new CheckPassCodeResponse();
     }
 
     public void setImgDir(String imgDir) {

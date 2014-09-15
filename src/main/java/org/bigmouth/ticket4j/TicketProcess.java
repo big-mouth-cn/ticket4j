@@ -187,6 +187,14 @@ public class TicketProcess {
                     submitResponse = order.submit(response, submitOrderRequest);
                     if (null == submitResponse) 
                         continue;
+                    else {
+                        if (StringUtils.startsWith(submitResponse.getMessage(), "您还有未处理的订单")) {
+                            if (LOGGER.isWarnEnabled()) {
+                                LOGGER.warn("您还有未处理的订单，请登录12306客运服务后台->未完成订单 进行处理!");
+                            }
+                            return;
+                        }
+                    }
                 } while (!submitResponse.isContinue());
                 
                 if (submitResponse.isContinue()) {
