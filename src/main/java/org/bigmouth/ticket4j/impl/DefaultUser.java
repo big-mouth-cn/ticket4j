@@ -29,9 +29,13 @@ public class DefaultUser extends AccessSupport implements User {
     private String uriCheckUser = Ticket4jDefaults.URI_CHECK_USER;
     private String uriPassengersQuery = Ticket4jDefaults.URI_PASSENGERS_QUERY;
     
-    private final String username;
-    private final String password;
+    private String username;
+    private String password;
     
+    public DefaultUser(Ticket4jHttpClient ticket4jHttpClient) {
+        super(ticket4jHttpClient);
+    }
+
     public DefaultUser(Ticket4jHttpClient ticket4jHttpClient, String username, String password) {
         super(ticket4jHttpClient);
         this.username = username;
@@ -119,6 +123,14 @@ public class DefaultUser extends AccessSupport implements User {
             LOGGER.error("查询常用联系人失败,错误原因：{}", e.getMessage());
         }
         return null;
+    }
+    
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getUsername() {

@@ -76,22 +76,36 @@ public class QueryTicketResponse extends Response {
         return false;
     }
     
-    public List<Train> filter(List<String> includes, List<String> excludes, List<Seat> seats, int ticketQuantity) {
+    public List<Train> filter(List<String> includes, List<String> excludes, List<Seat> seats, int ticketQuantity, boolean orderByIncludes) {
         if (!allowBuy())
             return Lists.newArrayList();
         List<Train> trains = Lists.newArrayList();
-        filterTrains(includes, excludes, trains);
+        filterTrains(includes, excludes, trains, orderByIncludes);
         filterSeats(seats, ticketQuantity, trains);
         return trains;
     }
 
-    private void filterTrains(List<String> includes, List<String> excludes, List<Train> trains) {
+    private void filterTrains(List<String> includes, List<String> excludes, List<Train> trains, boolean orderByIncludes) {
         // 仅预定指定车次的车票
         if (CollectionUtils.isNotEmpty(includes)) {
-            for (Train train : data) {
-                TrainDetails dto = train.getQueryLeftNewDTO();
-                if (dto.contains(includes)) {
-                    trains.add(train);
+            // 按指定车次排序
+            if (orderByIncludes) {
+                for (String include : includes) {
+                    for (Train train : data) {
+                        TrainDetails dto = train.getQueryLeftNewDTO();
+                        if (dto.equals(include)) {
+                            trains.add(train);
+                        }
+                    }
+                }
+            }
+            else {
+                // 不排序
+                for (Train train : data) {
+                    TrainDetails dto = train.getQueryLeftNewDTO();
+                    if (dto.contains(includes)) {
+                        trains.add(train);
+                    }
                 }
             }
         }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
+import org.bigmouth.ticket4j.entity.OrderBy;
 import org.bigmouth.ticket4j.entity.Request;
 import org.bigmouth.ticket4j.entity.Seat;
 
@@ -35,6 +36,8 @@ public class QueryTicketRequest extends Request {
     private List<Seat> seats = Lists.newArrayList(Seat.ALL);
     /** Ticket quantity */
     private int ticketQuantity = 0;
+    /** Order By */
+    private OrderBy orderBy = OrderBy.ORDER_SEAT;
 
     public String getTrainDate() {
         return trainDate;
@@ -98,6 +101,14 @@ public class QueryTicketRequest extends Request {
 
     public void setTicketQuantity(int ticketQuantity) {
         this.ticketQuantity = ticketQuantity;
+    }
+    
+    public OrderBy getOrderBy() {
+        return orderBy;
+    }
+    
+    public void setOrderBy(OrderBy orderBy) {
+        this.orderBy = orderBy;
     }
 
     @Override

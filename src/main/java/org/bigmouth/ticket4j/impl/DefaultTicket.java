@@ -17,6 +17,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.bigmouth.framework.util.DateUtils;
 import org.bigmouth.ticket4j.Ticket;
 import org.bigmouth.ticket4j.Ticket4jDefaults;
+import org.bigmouth.ticket4j.entity.OrderBy;
 import org.bigmouth.ticket4j.entity.Seat;
 import org.bigmouth.ticket4j.entity.request.QueryTicketRequest;
 import org.bigmouth.ticket4j.entity.response.QueryTicketResponse;
@@ -126,7 +127,8 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             List<String> excludes = condition.getExcludeTrain();
             List<Seat> seats = condition.getSeats();
             int ticketQuantity = condition.getTicketQuantity();
-            List<Train> allows = result.filter(includes, excludes, seats, ticketQuantity);
+            boolean orderByIncludes = condition.getOrderBy() == OrderBy.ORDER_TRAIN;
+            List<Train> allows = result.filter(includes, excludes, seats, ticketQuantity, orderByIncludes);
             
             // 将所有未过滤的车次打印出来
             if (LOGGER.isDebugEnabled()) {
@@ -138,13 +140,17 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             if (CollectionUtils.isEmpty(allows))
                 return result;
             // 按照席别进行车次排序
-            List<Train> snapshot = sort(seats, ticketQuantity, allows);
-            result.setAllows(snapshot);
+            if (condition.getOrderBy() == OrderBy.ORDER_SEAT) {
+                List<Train> snapshot = sort(seats, ticketQuantity, allows);
+                result.setAllows(snapshot);
+            } else {
+                result.setAllows(allows);
+            }
             
             // 打印排序后的车次顺序
             if (LOGGER.isInfoEnabled()) {
                 StringBuilder message = new StringBuilder(); 
-                for (Train train : snapshot) {
+                for (Train train : result.getAllows()) {
                     message.append(train.getQueryLeftNewDTO().getStation_train_code()).append(">");
                 }
                 LOGGER.info("根据您的订票席别的优先顺序，系统将车次进行了排序：" + message.substring(0, message.length() - 1));
@@ -184,7 +190,8 @@ public class DefaultTicket extends AccessSupport implements Ticket {
                 isCache = false;
             }
         }
-        LOGGER.info("{} [{}]", (isCache) ? "缓存" : "最新", hdMessage.toString());
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("{} [{}]", (isCache) ? "缓存" : "最新", hdMessage.toString());
         return (isCache) ? null : crtServerTime;
     }
 
