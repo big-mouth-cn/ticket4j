@@ -158,7 +158,7 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             return result;
         }
         catch (Exception e) {
-            LOGGER.error("查询车票失败!错误原因：{}", e.getMessage());
+            LOGGER.error("查询车票失败!", e);
             throw new RuntimeException(e);
         }
         finally {
@@ -181,7 +181,7 @@ public class DefaultTicket extends AccessSupport implements Ticket {
                     crtServerTime = SDF.parse(header.getValue());
                     time = DateUtils.convertDate2String(crtServerTime, "yyyy/MM/dd HH:mm:ss");
                 }
-                catch (ParseException e) {
+                catch (Exception e) {
                 }
                 hdMessage.append(time).append(" ");
             }

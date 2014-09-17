@@ -22,8 +22,9 @@ public final class Ticket4jDefaults {
     public static final String PURPOSE_CODE_00 = "00";
 
     public static final String PATH_TMP = System.getProperty("java.io.tmpdir");
-    public static final String PATH_COOKIE_DIRECTORY = PathUtils.appendEndFileSeparator(Ticket4jDefaults.PATH_TMP) + "bigmouth-ticket4j/cookies";
-    public static final String PATH_ORDER_DIRECTORY = PathUtils.appendEndFileSeparator(PATH_TMP) + "bigmouth-ticket4j/orders";
+    public static final String PATH_TICKET4J = PathUtils.appendEndFileSeparator(Ticket4jDefaults.PATH_TMP) + "bigmouth-ticket4j";
+    public static final String PATH_COOKIE_DIRECTORY = PathUtils.appendEndFileSeparator(PATH_TICKET4J) + "cookies";
+    public static final String PATH_ORDER_DIRECTORY = PathUtils.appendEndFileSeparator(PATH_TICKET4J) + "orders";
     public static final String IMAGE_SUFFIX = ".png";
     
     public static final String URI = "/otn";
