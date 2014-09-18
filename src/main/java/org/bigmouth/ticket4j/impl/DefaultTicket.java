@@ -190,8 +190,8 @@ public class DefaultTicket extends AccessSupport implements Ticket {
                 isCache = false;
             }
         }
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("{} [{}]", (isCache) ? "缓存" : "最新", hdMessage.toString());
+        if (LOGGER.isInfoEnabled())
+            LOGGER.info("{} [{}]", (isCache) ? "Cache" : "Data ", hdMessage.toString());
         return (isCache) ? null : crtServerTime;
     }
 
