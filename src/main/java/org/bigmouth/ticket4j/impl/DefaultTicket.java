@@ -13,6 +13,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.message.BasicNameValuePair;
 import org.bigmouth.framework.util.DateUtils;
 import org.bigmouth.ticket4j.Ticket;
@@ -120,7 +121,7 @@ public class DefaultTicket extends AccessSupport implements Ticket {
             
             String body = HttpClientUtils.getResponseBody(httpResponse);
             QueryTicketResponse result = fromJson(body, QueryTicketResponse.class);
-            if (!result.isStatus()) {
+            if (null == result || !result.isStatus()) {
                 return result;
             }
             List<String> includes = condition.getIncludeTrain();
@@ -156,6 +157,10 @@ public class DefaultTicket extends AccessSupport implements Ticket {
                 LOGGER.info("根据您的订票席别的优先顺序，系统将车次进行了排序：" + message.substring(0, message.length() - 1));
             }
             return result;
+        }
+        catch (HttpHostConnectException e) {
+            LOGGER.error("查询车票失败!" + e.getMessage());
+            return null;
         }
         catch (Exception e) {
             LOGGER.error("查询车票失败!", e);

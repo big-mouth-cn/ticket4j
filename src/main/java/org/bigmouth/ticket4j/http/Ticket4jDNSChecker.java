@@ -97,6 +97,7 @@ public class Ticket4jDNSChecker extends BaseLifeCycleSupport {
             }
 
             private void testSpeed() {
+                MAPPINGS.clear();
                 for (String ip : addresses) {
                     if (LOGGER.isInfoEnabled()) {
                         LOGGER.info("正在测试 {} 的速度...", ip);
