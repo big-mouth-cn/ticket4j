@@ -12,6 +12,7 @@ public class Report implements Serializable {
 
     private String ip;
     private String mac;
+    private String motherboardSn;
     private String username;
     private List<OrderInfo> orders;
     private Date time = new Date();
@@ -30,6 +31,14 @@ public class Report implements Serializable {
 
     public void setMac(String mac) {
         this.mac = mac;
+    }
+    
+    public String getMotherboardSn() {
+        return motherboardSn;
+    }
+
+    public void setMotherboardSn(String motherboardSn) {
+        this.motherboardSn = motherboardSn;
     }
 
     public String getUsername() {
